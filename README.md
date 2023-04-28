@@ -1,4 +1,5 @@
-# File viewer - glogg
+# Vaadin addon - File viewer (glogg)
+![image](https://user-images.githubusercontent.com/1457603/235087580-accbe673-caa3-4b96-b00c-ba262b74d554.png)
 
 This add-on is based on the popular log viewer software called glogg.
 
@@ -77,5 +78,4 @@ If you want to display the entire log line without text-wrapping, you need to ex
 |  |---------------------------------------------------------|  |
 |---------------------------------------------------------------|
 ```
-
 Original template https://github.com/vaadin/addon-template
