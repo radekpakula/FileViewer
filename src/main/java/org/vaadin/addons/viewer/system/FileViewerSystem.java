@@ -11,9 +11,15 @@ public class FileViewerSystem {
     private FilePolling filePolling;
     private boolean followChanges = true;
 
+    private ViewerSettings viewerSettings;
+
     public FileViewerSystem(FileViewerConfig config) {
-        this.ui = UI.getCurrent();
+        this(config,ViewerSettings.base());
+    }
+
+    public FileViewerSystem(FileViewerConfig config, ViewerSettings viewerSettings) {
         this.config = config;
+        this.viewerSettings = viewerSettings;
     }
 
     public UI getUi() {
@@ -49,5 +55,9 @@ public class FileViewerSystem {
 
     public FileViewerConfig getConfig() {
         return config;
+    }
+
+    public ViewerSettings getViewerSettings() {
+        return viewerSettings;
     }
 }

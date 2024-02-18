@@ -1,12 +1,6 @@
 
 package org.vaadin.addons.viewer.application.file.search;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.file.Path;
-import java.util.Locale;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.addons.viewer.application.exception.ViewerException;
@@ -14,6 +8,12 @@ import org.vaadin.addons.viewer.application.file.search.matcher.DefaultMatcher;
 import org.vaadin.addons.viewer.application.file.search.matcher.IgnoreCaseMatcher;
 import org.vaadin.addons.viewer.application.file.search.matcher.RegexMatcher;
 import org.vaadin.addons.viewer.application.file.search.matcher.SearchMatcher;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Searches the file from the indicated position. Performs a check operation for each found line.
@@ -24,7 +24,7 @@ public final class FileSearching {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileSearching.class);
 
-    private static final int defaultBufferSize = 8192;
+    private static final int BUFFER_SIZE = 8192;
 
     private FileSearching() {
     }
@@ -42,7 +42,7 @@ public final class FileSearching {
         try (RandomAccessFile raf = new RandomAccessFile(searchIndex.getPath().toFile(), "r")) {
             StringBuilder sb = new StringBuilder();
             raf.seek(from);
-            byte[] buf = new byte[defaultBufferSize];
+            byte[] buf = new byte[BUFFER_SIZE];
             int charsRead = raf.read(buf, 0, buf.length);
 
             while (charsRead != -1) {
@@ -64,7 +64,7 @@ public final class FileSearching {
                 charsRead = raf.read(buf, 0, buf.length);
                 if (searchIndex.isInterrupt()) {
                     searchIndex.setProcessingTime((System.currentTimeMillis() - start));
-                    LOG.info("Searching interrupted by the user");
+                    LOG.debug("Searching interrupted by the user");
                     return searchIndex;
                 }
             }
@@ -74,7 +74,7 @@ public final class FileSearching {
         } catch (IOException e) {
             throw new ViewerException(e);
         }
-        LOG.info("Searching of the file {} took {} ms. File length {} found lines {}",
+        LOG.debug("Searching of the file {} took {} ms. File length {} found lines {}",
                 searchIndex.getPath(), (System.currentTimeMillis() - start),
                 searchIndex.getPath().toFile().length(), searchIndex.getMatchCount());
         searchIndex.setProcessingTime((System.currentTimeMillis() - start));
@@ -104,7 +104,7 @@ public final class FileSearching {
     }
 
     private static void checkLastLine(SearchForm form, FileSearchIndex searchIndex, long beginningOfTheLineMarker,
-            SearchMatcher matchers, StringBuilder sb) {
+                                      SearchMatcher matchers, StringBuilder sb) {
         if (matchers.match(form.getRegexPattern(), form.getText(), sb.toString())) {
             searchIndex.increaseLineCounter();
             searchIndex.addPointer(FileSearchResultLine.of(searchIndex.getLineCounter(), beginningOfTheLineMarker));
@@ -112,7 +112,7 @@ public final class FileSearching {
     }
 
     private static long newLineDetected(SearchForm form, FileSearchIndex searchIndex,
-            long beginningOfTheLineMarker, SearchMatcher matchers, StringBuilder sb) {
+                                        long beginningOfTheLineMarker, SearchMatcher matchers, StringBuilder sb) {
         searchIndex.increaseLineCounter();
         if (matchers.match(form.getRegexPattern(), form.getText(), sb.toString())) {
             searchIndex.addPointer(FileSearchResultLine.of(searchIndex.getLineCounter(),
@@ -148,7 +148,7 @@ public final class FileSearching {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ViewerException(e);
         }
     }
 }

@@ -41,7 +41,7 @@ public class FileTab extends Div {
         }
         initialized = true;
 
-        new CompletableFuture<FileIndex>().completeAsync(() -> FileIndexing.updateIndex(
+        new CompletableFuture<FileIndex>().completeAsync(() -> FileIndexing.indexFile(
                         new FileIndex(fileInfo.getFile().toPath())))
                 .whenCompleteAsync((fileMap, error) -> {
                     FileContentGrid grid = new FileContentGrid(system, fileMap);
@@ -84,6 +84,14 @@ public class FileTab extends Div {
             fileViewGrid.extendIndexEvent();
             searchView.extendSearchEvent();
         }
+    }
+
+    public void scrollToFirstLine() {
+        fileViewGrid.scrollToFirstLine();
+    }
+
+    public void scrollToLastLine() {
+        fileViewGrid.scrollToLastLine();
     }
 
     //UI access

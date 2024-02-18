@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -24,8 +25,8 @@ public class SearchBarFields extends MenuBar {
     private final Binder<SearchForm> binder;
 
     private final TextField searchField;
-    private final Label percent;
-    private final Label matches;
+    private final Span percent;
+    private final Span matches;
     private final Button searchBtn;
     private final Button stopBtn;
     private final Checkbox autoRefresh;
@@ -59,13 +60,13 @@ public class SearchBarFields extends MenuBar {
         stopBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
         stopBtn.setVisible(false);
 
-        this.percent = new Label();
+        this.percent = new Span();
         this.percent.setVisible(false);
 
         this.binder = new Binder<>();
         this.binder.setBean(new SearchForm());
 
-        this.matches = new Label("Found: 0");
+        this.matches = new Span("Found: 0");
         this.matches.getStyle().set("text-align", "right");
         this.matches.getStyle().set("margin-right", "5px");
 
@@ -130,11 +131,11 @@ public class SearchBarFields extends MenuBar {
         return searchField;
     }
 
-    public Label getPercent() {
+    public Span getPercent() {
         return percent;
     }
 
-    public Label getMatches() {
+    public Span getMatches() {
         return matches;
     }
 

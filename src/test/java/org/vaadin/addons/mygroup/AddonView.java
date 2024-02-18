@@ -35,14 +35,18 @@ public class AddonView extends Div implements AppShellConfigurator {
             public boolean searchViewVisible() {
                 return true;
             }
+
+            @Override
+            public boolean fontResizeAllowed() {
+                return true;
+            }
         });
         viewer.setId("theAddon");
 
         add(viewer);
 
-        viewer.openFile(new File("c:/temp/indiana/big.log").toPath());
-        viewer.openFile(new File("c:/temp/indiana/file.log").toPath());
-        viewer.openFile(new File("C:\\indiana\\logs\\system.log").toPath());
+        viewer.openFile(new File("C:\\temp\\coupler\\logs\\coupler.log").toPath());
+        viewer.openFile(new File("C:\\temp\\coupler\\logs\\system.log").toPath());
     }
 
 }

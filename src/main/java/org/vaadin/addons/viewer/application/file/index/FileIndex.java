@@ -42,7 +42,7 @@ public class FileIndex {
     /**
      * Return position in the file for the given index.
      */
-    public long getPage(int i) {
+    public long getPosition(int i) {
         if (i == lineCursor.size()) {
             return indexedSize;
         }

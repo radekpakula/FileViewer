@@ -22,6 +22,7 @@ public class SearchResultGrid extends Grid<LineSearchEntry> {
         addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
         addThemeVariants(GridVariant.LUMO_COMPACT);
         addThemeName("log");
+
         setSizeFull();
         setPageSize(FileSearchIndex.RESULT_PER_PAGE);
 
@@ -32,7 +33,7 @@ public class SearchResultGrid extends Grid<LineSearchEntry> {
     }
 
     private void goToLine(LineSearchEntry item, FileContentGrid grid) {
-        grid.scrollToIndex(item.getLineNumber() - 1);
+        grid.selectLineByIndex(item.getLineNumber() - 1);
     }
 
     void setResult(FileSearchIndex searchIndex) {
@@ -51,5 +52,6 @@ public class SearchResultGrid extends Grid<LineSearchEntry> {
             return list.stream();
         }, query -> searchIndex.getMatchCount());
     }
+
 
 }

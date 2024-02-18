@@ -34,11 +34,11 @@ public final class FileReader {
         }
         int index = offset == 0 ? 0 : offset / FileIndex.INDEX_PER_ROWINDEX_PER_ROW;
 
-        long rowFrom = fileIndex.getPage(index);
+        long rowFrom = fileIndex.getPosition(index);
         if (rowFrom > 0) {
             ++rowFrom;
         }
-        long rowTo = fileIndex.getPage(index + 1);
+        long rowTo = fileIndex.getPosition(index + 1);
 
         validateParameters(path, rowFrom, rowTo);
 
@@ -72,6 +72,17 @@ public final class FileReader {
         }
 
         return lines;
+    }
+
+    public static LineSearchEntry readLine(Path path, long rowFrom, int lineNumber) {
+        String line;
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            raf.seek(rowFrom);
+            line = raf.readLine();
+        } catch (IOException e) {
+            throw new ViewerException(e);
+        }
+        return LineSearchEntry.of(line, lineNumber);
     }
 
     private static void validateParameters(Path path, long rowFrom, long rowTo) {

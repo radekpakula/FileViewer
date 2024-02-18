@@ -16,4 +16,9 @@ public class DefaultFileViewerConfig implements FileViewerConfig{
     public boolean searchViewVisible() {
         return true;
     }
+
+    @Override
+    public boolean fontResizeAllowed() {
+        return true;
+    }
 }

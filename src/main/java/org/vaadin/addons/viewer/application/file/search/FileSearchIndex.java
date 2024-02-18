@@ -14,7 +14,7 @@ public class FileSearchIndex {
 
     private final Path path;
     private final List<FileSearchResultLine> lineCursor = new ArrayList<>();
-    public boolean searchDone;
+    private boolean searchDone;
     private long processingTime;
     private long processingPosition;
     private long fileSize;
@@ -24,7 +24,6 @@ public class FileSearchIndex {
     public FileSearchIndex(Path path) {
         this.path = path;
     }
-
 
     public int getMatchCount() {
         return lineCursor.size();
@@ -42,8 +41,16 @@ public class FileSearchIndex {
         return processingTime;
     }
 
+    void setProcessingTime(long processingTime) {
+        this.processingTime = processingTime;
+    }
+
     public double processingPercentage() {
-        return (double) processingPosition / fileSize;
+        final double v = (double) processingPosition / fileSize;
+        if (v > 1) {
+            return 1;
+        }
+        return v;
     }
 
     public void interrupt() {
@@ -67,11 +74,9 @@ public class FileSearchIndex {
     }
 
     void removeLastEntryIfEqualToCurrent(long beginningOfTheLineMarker) {
-        if (getLineCounter() > 0) {
-            if (getLastEntry().getPosition() == beginningOfTheLineMarker) {
-                lineCursor.remove(lineCursor.size() - 1);
-                --lineCounter;
-            }
+        if (getLineCounter() > 0 && getLastEntry().getPosition() == beginningOfTheLineMarker) {
+            lineCursor.remove(lineCursor.size() - 1);
+            --lineCounter;
         }
     }
 
@@ -81,10 +86,6 @@ public class FileSearchIndex {
 
     void addPointer(FileSearchResultLine result) {
         lineCursor.add(result);
-    }
-
-    void setProcessingTime(long processingTime) {
-        this.processingTime = processingTime;
     }
 
     long getProcessingPosition() {
