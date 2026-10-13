@@ -86,7 +86,6 @@ public class ViewerMenuBar extends MenuBar {
         pollingIntervalField.setMax(30);
         pollingIntervalField.setValue(system.getConfig().pollingInterval());
         pollingIntervalField.setWidth(60, Unit.PIXELS);
-
         final Checkbox pollingEnabled =
                 new Checkbox("Polling [s]", true, e -> system.enablePolling(e.getValue(), pollingIntervalField.getValue()));
         this.addItem(pollingEnabled);

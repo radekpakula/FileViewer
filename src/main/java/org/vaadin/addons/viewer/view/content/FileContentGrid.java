@@ -1,10 +1,5 @@
 
 package org.vaadin.addons.viewer.view.content;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.server.VaadinServletService;
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -40,8 +35,11 @@ public class FileContentGrid extends Grid<LineEntry> {
         setSizeFull();
         setPageSize(FileIndex.INDEX_PER_ROWINDEX_PER_ROW);
 
-        Column<LineEntry> indexCol = addColumn(item -> "").setWidth("80px").setFlexGrow(0).setKey("rowIndex")
-                .setClassNameGenerator(e -> "ident").setFrozen(true);
+        Column<LineEntry> indexCol = addColumn(item -> "")
+                .setWidth("80px")
+                .setFlexGrow(0)
+                .setKey("rowIndex")
+                .setPartNameGenerator(e -> "ident").setFrozen(true);
         addColumn(LineEntry::getLog);
         setItems((CallbackDataProvider.FetchCallback<LineEntry, Void>) query -> {
             List<LineEntry> list;

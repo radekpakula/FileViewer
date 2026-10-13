@@ -26,8 +26,9 @@ public class SearchResultGrid extends Grid<LineSearchEntry> {
         setSizeFull();
         setPageSize(FileSearchIndex.RESULT_PER_PAGE);
 
-        addColumn(LineSearchEntry::getLineNumber).setWidth("80px").setFlexGrow(0).setKey("rowIndex")
-                .setClassNameGenerator(e -> "ident").setFrozen(true);
+        addColumn(LineSearchEntry::getLineNumber)
+                .setWidth("80px").setFlexGrow(0).setKey("rowIndex")
+                .setPartNameGenerator(e -> "ident").setFrozen(true);
         addColumn(LineSearchEntry::getLine);
         addItemClickListener(e -> goToLine(e.getItem(), grid));
     }
