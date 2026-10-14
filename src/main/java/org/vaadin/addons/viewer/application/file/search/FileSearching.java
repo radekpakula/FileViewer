@@ -27,8 +27,12 @@ public final class FileSearching {
         try (RandomAccessFile raf = new RandomAccessFile(searchIndex.getPath().toFile(), "r")) {
             EncodedLineReader reader = new EncodedLineReader(raf, searchIndex.getCharset());
             String line;
-            while ((line = reader.readLine()) != null) {
-                long linePosition = searchIndex.getProcessingPosition();
+            while (true) {
+                long linePosition = raf.getFilePointer();
+                line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
                 if (matchers.match(form.getRegexPattern(), form.getText(), line)) {
                     searchIndex.addPointer(FileSearchResultLine.of(searchIndex.getLineCounter() + 1, linePosition));
                 }
