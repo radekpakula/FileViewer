@@ -8,7 +8,7 @@ FileViewer is a Vaadin Flow component for viewing and monitoring large text file
 - Indexes files and displays their contents in a grid, including large files.
 - Searches file contents and displays matching lines in a separate results grid.
 - Supports case-sensitive/case-insensitive and regular-expression searches.
-- Can poll open files for appended content and update the content and search-results grids.
+- Can poll open files for appended content and update the content and search-results grids. Monitoring is intended for append-only log files; truncation, replacement, and same-size rewrites are not detected or handled.
 - Supports selecting a character encoding per file.
 - Lets users adjust font size, line height, and row height, or initialize those values in code.
 - Allows polling, search UI, and interactive font resizing to be configured.
@@ -105,7 +105,7 @@ boolean searchVisible = currentConfig.searchViewVisible();
 boolean fontResizeAllowed = currentConfig.fontResizeAllowed();
 ```
 
-`getViewerConfig()` returns the configuration object supplied when the viewer was created. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
+`getViewerConfig()` returns a read-only configuration view: polling values reflect the viewer's current polling state, while search visibility and font-resizing options reflect the configuration supplied at construction. It does not return the original configuration object. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
 
 ## Initial font and row settings
 
