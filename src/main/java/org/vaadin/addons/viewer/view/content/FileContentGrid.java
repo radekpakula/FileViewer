@@ -20,7 +20,7 @@ import org.vaadin.addons.viewer.system.FileViewerSystem;
 public class FileContentGrid extends Grid<LineEntry> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileContentGrid.class);
-    private final FileIndex fileIndex;
+    private FileIndex fileIndex;
     private final FileViewerSystem system;
 
     FileContentGrid(FileViewerSystem system, FileIndex fileIndex) {
@@ -92,5 +92,13 @@ public class FileContentGrid extends Grid<LineEntry> {
                 scrollToIndex(fileIndex.getMaxIndex());
             }
         });
+    }
+
+    public void rebuildIndexEvent() {
+        fileIndex = FileIndexing.indexFile(new FileIndex(fileIndex.getPath(), fileIndex.getCharset()));
+        getDataProvider().refreshAll();
+        if (system.isFollowChanges()) {
+            scrollToIndex(fileIndex.getMaxIndex());
+        }
     }
 }
