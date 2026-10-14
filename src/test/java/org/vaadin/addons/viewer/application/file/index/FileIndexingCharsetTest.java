@@ -59,6 +59,27 @@ class FileIndexingCharsetTest {
     }
 
     @Test
+    void whenIndexingCrLfAndCrSeparatedFileThenReadsAllLines() throws Exception {
+        Path file = tempDir.resolve("mixed-newlines.log");
+        Files.writeString(file, "first\\r\\nsecond\\rthird\\nlast", StandardCharsets.UTF_8);
+
+        FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
+
+        assertEquals(List.of("first", "second", "third", "last"),
+                FileReader.readLines(index, 0, 10).stream().map(e -> e.getLog()).toList());
+    }
+
+    @Test
+    void whenIndexingEmptyFileThenReturnsNoLines() throws Exception {
+        Path file = tempDir.resolve("empty.log");
+        Files.createFile(file);
+
+        FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
+
+        assertEquals(List.of(), FileReader.readLines(index, 0, 10));
+    }
+
+    @Test
     void whenIndexingAfterFileWasExtendedThenAddsOnlyNewLines() throws Exception {
         Path file = tempDir.resolve("append.log");
         Files.writeString(file, "pierwsza\n", StandardCharsets.UTF_8);
