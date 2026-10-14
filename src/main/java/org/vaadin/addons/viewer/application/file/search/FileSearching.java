@@ -12,6 +12,7 @@ import org.vaadin.addons.viewer.application.file.search.matcher.SearchMatcher;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public final class FileSearching {
@@ -20,6 +21,13 @@ public final class FileSearching {
     private FileSearching() {}
 
     public static FileSearchIndex search(SearchForm form, FileSearchIndex searchIndex) {
+        Objects.requireNonNull(form, "form");
+        Objects.requireNonNull(searchIndex, "searchIndex");
+        String text = Objects.requireNonNull(form.getText(), "search text");
+        String searchText = form.isIgnoreCase() ? text.toLowerCase(Locale.ROOT) : text;
+        Pattern pattern = form.isRegex() ? Pattern.compile(searchText) : null;
+        SearchMatcher matchers = prepareMatchersBasedOnForm(form);
+
         long start = System.currentTimeMillis();
         long currentSize = searchIndex.getPath().toFile().length();
         boolean incremental = searchIndex.canContinue(form, currentSize);
@@ -62,9 +70,6 @@ public final class FileSearching {
         }
 
         searchIndex.rememberSearchForm(form);
-        SearchMatcher matchers = prepareMatchersBasedOnForm(form);
-        String searchText = form.isIgnoreCase() ? form.getText().toLowerCase(Locale.ROOT) : form.getText();
-        Pattern pattern = form.isRegex() ? Pattern.compile(searchText) : null;
 
         if (incremental && currentSize == searchIndex.getProcessingPosition()) {
             searchIndex.setProcessingTime(System.currentTimeMillis() - start);
