@@ -64,4 +64,13 @@ public class ViewerSettings {
     public void setRowHeight(int rowHeight) {
         this.rowHeight = rowHeight;
     }
+
+    /**
+     * Creates an independent copy of these display settings.
+     *
+     * @return a copy containing the current font size, line height, and row height
+     */
+    public ViewerSettings getCopy() {
+        return new ViewerSettings(fontSize, lineHeight, rowHeight);
+    }
 }
