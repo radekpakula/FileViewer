@@ -66,6 +66,9 @@ public class FileTab extends Div {
     }
 
     public void onCloseEvent() {
+        if (searchView != null) {
+            searchView.stopSearchEvent();
+        }
         getElement().removeFromParent();
     }
 
