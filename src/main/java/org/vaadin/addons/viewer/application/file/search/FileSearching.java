@@ -33,7 +33,10 @@ public final class FileSearching {
                 try (RandomAccessFile raf = new RandomAccessFile(searchIndex.getPath().toFile(), "r")) {
                     raf.seek(previousSize - 1);
                     int lastByte = raf.read();
-                    if (lastByte != '\\n' && lastByte != '\\r') {
+                    raf.seek(previousSize);
+                    int firstAppendedByte = raf.read();
+                    if (lastByte != '\\n' && lastByte != '\\r'
+                            || lastByte == '\\r' && firstAppendedByte == '\\n') {
                         reprocessLastLine = true;
                         long position = previousSize - 1;
                         while (position >= 0) {
