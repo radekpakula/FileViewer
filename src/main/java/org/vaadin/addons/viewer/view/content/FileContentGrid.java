@@ -100,9 +100,5 @@ public class FileContentGrid extends Grid<LineEntry> {
     @Override
     protected void onAttach(AttachEvent attachEvent){
         super.onAttach(attachEvent);
-
-        this.getElement().executeJs("var style = document.createElement('style'); style.textContent = '.cell { color: red; }'; this.shadowRoot.appendChild(style);");
-
-
     }
 }

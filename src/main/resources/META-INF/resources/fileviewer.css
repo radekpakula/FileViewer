@@ -8,10 +8,12 @@ vaadin-grid.file-viewer-grid::part(details-cell) {
     overflow-wrap: normal;
 }
 
-vaadin-grid.file-viewer-grid::part(body-cell) {
+
+vaadin-grid.file-viewer-grid[theme~="log"]::part(body-cell) {
+    font-size: var(--grid-font-size, 18px);
+    line-height: var(--grid-line-height, 20px);
+    min-height: var(--grid-row-height, 20px);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     color: var(--lumo-body-text-color);
-}
-
-.polling-interval{
-
 }
