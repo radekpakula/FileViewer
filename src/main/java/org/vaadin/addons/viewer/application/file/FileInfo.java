@@ -62,8 +62,9 @@ public class FileInfo {
         return length != file.length() || lastModified != file.lastModified();
     }
 
-    public boolean isContentRewritten() {
-        return length == file.length() && lastModified != file.lastModified();
+    public boolean requiresIndexRebuild() {
+        long currentLength = file.length();
+        return currentLength < length || currentLength == length && lastModified != file.lastModified();
     }
 
     public void updateFileLength() {
