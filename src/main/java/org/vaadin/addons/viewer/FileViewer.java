@@ -121,4 +121,23 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
         return fileTabSheet;
     }
 
+    /**
+     * Returns a copy of the current display settings.
+     * Changes made to the returned object do not modify the viewer's settings.
+     *
+     * @return a copy of the current font size, line height, and row height settings
+     */
+    public ViewerSettings getViewerSettings() {
+        return system.getViewerSettings().getCopy();
+    }
+
+    /**
+     * Returns the configuration used to initialize this viewer.
+     *
+     * @return the viewer's feature configuration
+     */
+    public FileViewerConfig getViewerConfig() {
+        return system.getConfig();
+    }
+
 }
