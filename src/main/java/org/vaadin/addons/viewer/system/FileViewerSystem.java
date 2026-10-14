@@ -11,7 +11,9 @@ public class FileViewerSystem {
     private FilePolling filePolling;
     private boolean followChanges = true;
 
-    private ViewerSettings viewerSettings;
+    private final ViewerSettings viewerSettings;
+    private Boolean pollingEnabled;
+    private Integer pollingInterval;
 
     public FileViewerSystem(FileViewerConfig config) {
         this(config,ViewerSettings.base());
@@ -45,19 +47,42 @@ public class FileViewerSystem {
         filePolling.interrupt();
     }
 
-    public void enablePolling(Boolean enable, Integer pollingTime) {
+    public void enablePolling(Boolean enable, Integer pollingInterval) {
+        this.pollingEnabled = enable;
+        this.pollingInterval = pollingInterval;
         if (enable) {
-            filePolling.schedule(pollingTime);
+            filePolling.schedule(pollingInterval);
         } else {
             filePolling.interrupt();
         }
     }
 
     public FileViewerConfig getConfig() {
-        return config;
+        return new FileViewerConfig() {
+            @Override
+            public boolean pollingEnabled() {
+                return pollingEnabled;
+            }
+
+            @Override
+            public int pollingInterval() {
+                return pollingInterval;
+            }
+
+            @Override
+            public boolean searchViewVisible() {
+                return config.searchViewVisible();
+            }
+
+            @Override
+            public boolean fontResizeAllowed() {
+                return config.fontResizeAllowed();
+            }
+        };
     }
 
     public ViewerSettings getViewerSettings() {
         return viewerSettings;
     }
+
 }

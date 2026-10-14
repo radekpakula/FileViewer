@@ -19,6 +19,9 @@ public class ViewerMenuBar extends MenuBar {
     private final FileTabSheet tabSheet;
 
     public ViewerMenuBar(FileViewerSystem system, FileTabSheet fileTabSheet, FileViewerConfig fileViewerConfig) {
+        this.addClassName("menu-block");
+        this.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
+        this.addThemeVariants(MenuBarVariant.LUMO_SMALL);
         this.tabSheet = fileTabSheet;
         this.addClassName("menu-block");
         this.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);

@@ -1,42 +1,38 @@
 package org.vaadin.addons.viewer;
 
+/**
+ * Controls optional features and polling defaults of a {@link FileViewer}.
+ * Use {@link DefaultFileViewerConfig} as a base when overriding only some options.
+ */
 public interface FileViewerConfig {
 
     /**
-     * By default, set to true
-     * If false, the top bar with polling and monitor configuration will be removed and background task for
-     * polling will be disabled
+     * Whether background polling is enabled and its controls are displayed.
+     *
+     * @return {@code true} to enable polling; the default is {@code true}
      */
     boolean pollingEnabled();
 
     /**
-     * Polling interval. By default, set to 3 seconds.
+     * Returns the initial polling interval, in seconds.
+     *
+     * @return polling interval in seconds; the default is 3 seconds
      */
     int pollingInterval();
 
     /**
-     * By default, set to true
-     * If false, the bottom bar for searching and also search result grid will be removed.
+     * Whether the search bar and search-results grid are displayed.
+     *
+     * @return {@code true} to display search UI; the default is {@code true}
      */
     boolean searchViewVisible();
 
-
     /**
-     * By default, set to false
-     * If true, you have to extends component style (frontend/your_theme_name/components/vaadin-grind.css
-     * about:
+     * Whether users can change font size, line height, and grid row height
+     * from the viewer's font menu.
      *
-     *   vaadin-grid{
-     *     --grid-row-height: 20px;
-     *     --grid-line-height: 20px;
-     *     --grid-font-size: 18px;
-     *   }
-     *
-     *   vaadin-grid:host([theme~='log']) [part~='cell'] {
-     *     min-height: var(--grid-row-height);
-     *     font-size: var(--grid-font-size);
-     *     line-height: var(--grid-line-height);
-     *   }
+     * @return {@code true} to allow interactive resizing; the default is {@code true}
      */
     boolean fontResizeAllowed();
+
 }

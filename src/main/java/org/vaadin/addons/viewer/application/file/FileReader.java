@@ -1,8 +1,9 @@
-
 package org.vaadin.addons.viewer.application.file;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,37 +17,37 @@ import org.vaadin.addons.viewer.application.file.search.FileSearchIndex;
 import org.vaadin.addons.viewer.application.file.search.FileSearchResultLine;
 import org.vaadin.addons.viewer.application.file.search.LineSearchEntry;
 
-/**
- * Reads a file from, to the specified location.
- */
 public final class FileReader {
-
     private static final Logger LOG = LoggerFactory.getLogger(FileReader.class);
-
-    private FileReader() {
-    }
+    private FileReader() {}
 
     public static List<LineEntry> readLines(FileIndex fileIndex, int offset, int limit) {
         Path path = fileIndex.getPath();
         LOG.debug("Request {} limit {}", offset, limit);
-        if (offset + limit > fileIndex.getMaxIndex()) {
-            limit = limit - ((limit + offset) - fileIndex.getMaxIndex()) + 1;
+        int maxLine = fileIndex.getMaxIndex() + 1;
+        if (offset >= maxLine) {
+            return List.of();
         }
-        int index = offset == 0 ? 0 : offset / FileIndex.INDEX_PER_ROWINDEX_PER_ROW;
-
+        limit = Math.min(limit, maxLine - offset);
+        int index = offset / FileIndex.INDEX_PER_ROWINDEX_PER_ROW;
         long rowFrom = fileIndex.getPosition(index);
-        if (rowFrom > 0) {
-            ++rowFrom;
+        if (index > 0) {
+            rowFrom++;
         }
-        long rowTo = fileIndex.getPosition(index + 1);
-
-        validateParameters(path, rowFrom, rowTo);
-
         List<LineEntry> lines = new ArrayList<>();
         try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
             raf.seek(rowFrom);
+            EncodedLineReader reader = new EncodedLineReader(raf, fileIndex.getCharset());
+            for (int i = 0; i < offset % FileIndex.INDEX_PER_ROWINDEX_PER_ROW; i++) {
+                if (reader.readLine() == null) {
+                    return lines;
+                }
+            }
             for (int i = 0; i < limit; i++) {
-                final String line = raf.readLine();
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
                 lines.add(LineEntry.of(line));
             }
         } catch (IOException e) {
@@ -56,43 +57,34 @@ public final class FileReader {
     }
 
     public static List<LineSearchEntry> readLines(FileSearchIndex fileIndex, int from, int to) {
-        Path path = fileIndex.getPath();
-        List<LineSearchEntry> lines = new ArrayList<>();
-        if (to > fileIndex.getMatchCount()) {
-            to = fileIndex.getMatchCount();
+        if (from < 0) {
+            throw new IllegalArgumentException("from must not be negative");
         }
-        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+        List<LineSearchEntry> lines = new ArrayList<>();
+        to = Math.min(to, fileIndex.getMatchCount());
+        try (RandomAccessFile raf = new RandomAccessFile(fileIndex.getPath().toFile(), "r")) {
             for (int i = from; i < to; i++) {
                 FileSearchResultLine index = fileIndex.getCursor(i);
                 raf.seek(index.getPosition());
-                lines.add(LineSearchEntry.of(raf.readLine(), index.getLine()));
+                String line = new EncodedLineReader(raf, fileIndex.getCharset()).readLine();
+                lines.add(LineSearchEntry.of(line, index.getLine()));
             }
         } catch (IOException e) {
             throw new ViewerException(e);
         }
-
         return lines;
     }
 
     public static LineSearchEntry readLine(Path path, long rowFrom, int lineNumber) {
-        String line;
-        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
-            raf.seek(rowFrom);
-            line = raf.readLine();
-        } catch (IOException e) {
-            throw new ViewerException(e);
-        }
-        return LineSearchEntry.of(line, lineNumber);
+        return readLine(path, rowFrom, lineNumber, StandardCharsets.UTF_8);
     }
 
-    private static void validateParameters(Path path, long rowFrom, long rowTo) {
-        if (!path.toFile().exists()) {
-            throw new ViewerException(String.format("File no longer exists! %s", path));
-        }
-        if (path.toFile().length() < rowFrom || path.toFile().length() < rowTo) {
-            throw new ViewerException(String.format(
-                    "The given position is bigger then file size. size: %s, from: %s, to: %s",
-                    path.toFile().length(), rowFrom, rowTo));
+    public static LineSearchEntry readLine(Path path, long rowFrom, int lineNumber, Charset charset) {
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            raf.seek(rowFrom);
+            return LineSearchEntry.of(new EncodedLineReader(raf, charset).readLine(), lineNumber);
+        } catch (IOException e) {
+            throw new ViewerException(e);
         }
     }
 }

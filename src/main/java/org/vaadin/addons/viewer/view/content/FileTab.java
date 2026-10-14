@@ -12,7 +12,6 @@ import org.vaadin.addons.viewer.application.file.index.FileIndexing;
 import org.vaadin.addons.viewer.system.FileViewerSystem;
 
 public class FileTab extends Div {
-
     private final FileViewerSystem system;
     private final FileInfo fileInfo;
     private final Div loader;
@@ -24,14 +23,11 @@ public class FileTab extends Div {
         this.system = system;
         this.fileInfo = fileInfo;
         this.setSizeFull();
-
         ProgressBar progressBar = new ProgressBar();
         progressBar.setIndeterminate(true);
-
         this.loader = new Div();
         loader.setClassName("center-loader");
         loader.add(progressBar, new Text("Indexing file. Please wait a while.."));
-
         add(loader);
     }
 
@@ -40,33 +36,30 @@ public class FileTab extends Div {
             return;
         }
         initialized = true;
-
         new CompletableFuture<FileIndex>().completeAsync(() -> FileIndexing.indexFile(
-                        new FileIndex(fileInfo.getFile().toPath())))
+                        new FileIndex(fileInfo.getFile().toPath(), fileInfo.getCharset())))
                 .whenCompleteAsync((fileMap, error) -> {
+                    if (error != null) {
+                        system.getUi().access(() -> loader.add(new Text(error.getMessage())));
+                        return;
+                    }
                     FileContentGrid grid = new FileContentGrid(system, fileMap);
                     system.getUi().access(() -> initFileView(grid));
-                    system.getUi();
                 });
     }
 
     private void initFileView(FileContentGrid fileViewGrid) {
         loader.getElement().removeFromParent();
-
         this.fileViewGrid = fileViewGrid;
-
-        if(system.getConfig().searchViewVisible()) {
+        if (system.getConfig().searchViewVisible()) {
             final FileSearchLayout searchView = new FileSearchLayout(system, fileInfo, fileViewGrid);
-
             this.searchView = searchView;
-
             SplitLayout splitLayout = new SplitLayout(fileViewGrid, searchView);
             splitLayout.setOrientation(SplitLayout.Orientation.VERTICAL);
             splitLayout.setSplitterPosition(50);
             splitLayout.setSizeFull();
-
             add(splitLayout);
-        }else{
+        } else {
             add(fileViewGrid);
         }
     }
@@ -82,7 +75,9 @@ public class FileTab extends Div {
     public void fileWasChangedEvent() {
         if (fileViewGrid != null) {
             fileViewGrid.extendIndexEvent();
-            searchView.extendSearchEvent();
+            if (searchView != null) {
+                searchView.extendSearchEvent();
+            }
         }
     }
 
@@ -94,7 +89,6 @@ public class FileTab extends Div {
         fileViewGrid.scrollToLastLine();
     }
 
-    //UI access
     public Div getLoader() {
         return loader;
     }
