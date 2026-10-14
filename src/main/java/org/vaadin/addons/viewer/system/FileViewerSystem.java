@@ -1,5 +1,7 @@
 package org.vaadin.addons.viewer.system;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.UI;
 import org.vaadin.addons.viewer.FileViewerConfig;
 import org.vaadin.addons.viewer.view.content.FilePolling;
@@ -10,23 +12,25 @@ public class FileViewerSystem {
     private final FileViewerConfig config;
     private FilePolling filePolling;
     private boolean followChanges = true;
-
     private final ViewerSettings viewerSettings;
-    private Boolean pollingEnabled;
-    private Integer pollingInterval;
+    private boolean pollingEnabled;
+    private int pollingInterval;
 
     public FileViewerSystem(FileViewerConfig config) {
-        this(config,ViewerSettings.base());
+        this(config, ViewerSettings.base());
     }
 
     public FileViewerSystem(FileViewerConfig config, ViewerSettings viewerSettings) {
-        this.config = config;
-        this.viewerSettings = viewerSettings;
+        this.config = Objects.requireNonNull(config, "config");
+        this.viewerSettings = Objects.requireNonNull(viewerSettings, "viewerSettings").getCopy();
+        this.pollingEnabled = config.pollingEnabled();
+        this.pollingInterval = config.pollingInterval();
     }
 
     public UI getUi() {
-        if(UI.getCurrent()!=null){
-            this.ui = UI.getCurrent();
+        UI current = UI.getCurrent();
+        if (current != null) {
+            ui = current;
         }
         return ui;
     }
@@ -40,33 +44,47 @@ public class FileViewerSystem {
     }
 
     public void setFilePolling(FilePolling filePolling) {
-        this.filePolling = filePolling;
+        this.filePolling = Objects.requireNonNull(filePolling, "filePolling");
     }
 
     public void interruptFilePolling() {
-        filePolling.interrupt();
-    }
-
-    public void enablePolling(Boolean enable, Integer pollingInterval) {
-        this.pollingEnabled = enable;
-        this.pollingInterval = pollingInterval;
-        if (enable) {
-            filePolling.schedule(pollingInterval);
-        } else {
+        if (filePolling != null) {
             filePolling.interrupt();
         }
     }
 
+    public void enablePolling(Boolean enable, Integer pollingInterval) {
+        Objects.requireNonNull(enable, "enable");
+        if (pollingInterval == null || pollingInterval < 1 || pollingInterval > 30) {
+            throw new IllegalArgumentException("Polling interval must be between 1 and 30 seconds");
+        }
+        this.pollingEnabled = enable;
+        this.pollingInterval = pollingInterval;
+        if (enable) {
+            if (filePolling == null) {
+                throw new IllegalStateException("File polling has not been initialized");
+            }
+            filePolling.schedule(pollingInterval);
+        } else {
+            interruptFilePolling();
+        }
+    }
+
+    /**
+     * Returns a snapshot of the feature configuration and current polling state.
+     */
     public FileViewerConfig getConfig() {
+        boolean currentPollingEnabled = pollingEnabled;
+        int currentPollingInterval = pollingInterval;
         return new FileViewerConfig() {
             @Override
             public boolean pollingEnabled() {
-                return pollingEnabled;
+                return currentPollingEnabled;
             }
 
             @Override
             public int pollingInterval() {
-                return pollingInterval;
+                return currentPollingInterval;
             }
 
             @Override
@@ -84,5 +102,4 @@ public class FileViewerSystem {
     public ViewerSettings getViewerSettings() {
         return viewerSettings;
     }
-
 }
