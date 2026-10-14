@@ -99,7 +99,14 @@ public class FileContentGrid extends Grid<LineEntry> {
                         LOG.error("Unable to extend file index", error);
                         return;
                     }
-                    system.getUi().access(() -> {
+                    com.vaadin.flow.component.UI ui = system.getUi();
+                    if (ui == null || !ui.isAttached()) {
+                        return;
+                    }
+                    ui.access(() -> {
+                        if (!ui.isAttached()) {
+                            return;
+                        }
                         getDataProvider().refreshAll();
                         if (system.isFollowChanges()) {
                             scrollToIndex(fileIndex.getMaxIndex());
@@ -117,7 +124,14 @@ public class FileContentGrid extends Grid<LineEntry> {
                         LOG.error("Unable to rebuild file index", error);
                         return;
                     }
-                    system.getUi().access(() -> {
+                    com.vaadin.flow.component.UI ui = system.getUi();
+                    if (ui == null || !ui.isAttached()) {
+                        return;
+                    }
+                    ui.access(() -> {
+                        if (!ui.isAttached()) {
+                            return;
+                        }
                         getDataProvider().refreshAll();
                         if (system.isFollowChanges()) {
                             scrollToIndex(fileIndex.getMaxIndex());
