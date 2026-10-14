@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.vaadin.addons.viewer.application.file.search.FileSearchIndex;
 import org.vaadin.addons.viewer.application.file.search.FileSearching;
+import org.vaadin.addons.viewer.application.file.search.LineSearchEntry;
 import org.vaadin.addons.viewer.application.file.search.SearchForm;
 
 import java.nio.charset.Charset;

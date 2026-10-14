@@ -35,8 +35,8 @@ public final class FileSearching {
                     int lastByte = raf.read();
                     raf.seek(previousSize);
                     int firstAppendedByte = raf.read();
-                    boolean completesCrLf = lastByte == '\\r' && firstAppendedByte == '\\n';
-                    if (lastByte != '\\n' && lastByte != '\\r' || completesCrLf) {
+                    boolean completesCrLf = lastByte == '\r' && firstAppendedByte == '\n';
+                    if (lastByte != '\n' && lastByte != '\r' || completesCrLf) {
                         reprocessLastLine = true;
                         if (completesCrLf) {
                             startPosition = previousSize - 1;
@@ -45,7 +45,7 @@ public final class FileSearching {
                             while (position >= 0) {
                                 raf.seek(position);
                                 int value = raf.read();
-                                if (value == '\\n' || value == '\\r') {
+                                if (value == '\n' || value == '\r') {
                                     startPosition = position + 1;
                                     break;
                                 }
