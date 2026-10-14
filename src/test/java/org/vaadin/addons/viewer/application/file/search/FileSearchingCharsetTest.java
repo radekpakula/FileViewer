@@ -176,5 +176,40 @@ class FileSearchingCharsetTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new FileSearchIndex(file, StandardCharsets.UTF_16LE));
     }
+
+    @Test
+    void whenIgnoreCaseSearchRunsUnderTurkishLocaleThenUsesLocaleIndependentMatching() throws Exception {
+        Path file = tempDir.resolve("turkish-locale.log");
+        Files.writeString(file, "INDEX\n", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("index");
+        form.setIgnoreCase(true);
+        java.util.Locale previousLocale = java.util.Locale.getDefault();
+        try {
+            java.util.Locale.setDefault(java.util.Locale.forLanguageTag("tr-TR"));
+            FileSearchIndex index = FileSearching.search(form, new FileSearchIndex(file, StandardCharsets.UTF_8));
+            assertEquals(1, index.getMatchCount());
+        } finally {
+            java.util.Locale.setDefault(previousLocale);
+        }
+    }
+
+    @Test
+    void whenRegexIsInvalidThenPreservesExistingSearchResults() throws Exception {
+        Path file = tempDir.resolve("invalid-regex.log");
+        Files.writeString(file, "alpha\nbeta\n", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("alpha");
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+        FileSearching.search(form, index);
+        assertEquals(1, index.getMatchCount());
+
+        form.setRegex(true);
+        form.setText("[");
+        assertThrows(java.util.regex.PatternSyntaxException.class, () -> FileSearching.search(form, index));
+        assertEquals(1, index.getMatchCount());
+        assertEquals(1, index.getCursor(0).getLine());
+    }
+
 }
 

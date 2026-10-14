@@ -22,6 +22,9 @@ public final class FileSearching {
     public static FileSearchIndex search(SearchForm form, FileSearchIndex searchIndex) {
         long start = System.currentTimeMillis();
         long currentSize = searchIndex.getPath().toFile().length();
+        SearchMatcher matchers = prepareMatchersBasedOnForm(form);
+        String searchText = form.isIgnoreCase() ? form.getText().toLowerCase(Locale.ROOT) : form.getText();
+        Pattern pattern = form.isRegex() ? Pattern.compile(searchText) : null;
         boolean incremental = searchIndex.canContinue(form, currentSize);
         long startPosition = 0;
         boolean reprocessLastLine = false;
@@ -62,10 +65,6 @@ public final class FileSearching {
         }
 
         searchIndex.rememberSearchForm(form);
-        SearchMatcher matchers = prepareMatchersBasedOnForm(form);
-        String searchText = form.isIgnoreCase() ? form.getText().toLowerCase(Locale.ROOT) : form.getText();
-        Pattern pattern = form.isRegex() ? Pattern.compile(searchText) : null;
-
         if (incremental && currentSize == searchIndex.getProcessingPosition()) {
             searchIndex.setProcessingTime(System.currentTimeMillis() - start);
             searchIndex.setSearchDone();

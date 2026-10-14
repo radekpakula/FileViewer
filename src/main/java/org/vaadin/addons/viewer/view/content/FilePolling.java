@@ -29,28 +29,32 @@ public class FilePolling {
     }
 
     private void checkOpenedFile() {
-        if (!ui.isAttached()) {
+        if (ui == null || !ui.isAttached()) {
             interrupt();
-            LOG.info("Interrupt file polling because of detached UI");
+            LOG.debug("Interrupt file polling because of detached UI");
             return;
         }
-        for (Tab tab : fileTabSheet.getTabs()) {
-            FileTab tabContent = fileTabSheet.getByTab(tab);
-            try {
-                if (tabContent.getFileInfo().isFileChanged()) {
+        ui.access(() -> {
+            if (!ui.isAttached()) {
+                return;
+            }
+            for (Tab tab : fileTabSheet.getTabs()) {
+                try {
+                    FileTab tabContent = fileTabSheet.getByTab(tab);
+                    if (tabContent == null || !tabContent.getFileInfo().isFileChanged()) {
+                        continue;
+                    }
                     tabContent.getFileInfo().updateFileLength();
-                    if (!fileTabSheet.getSelectedTab().equals(tab)) {
+                    if (fileTabSheet.getSelectedTab() == null || !fileTabSheet.getSelectedTab().equals(tab)) {
                         fileTabSheet.markTabWithAnInformationIcon(tab);
-
                     } else {
                         tabContent.fileWasChangedEvent();
                     }
+                } catch (Exception e) {
+                    LOG.error("Error during polling file in tab {}", tab, e);
                 }
-            } catch (Exception e) {
-                LOG.error("Error during polling file ",e);
-                throw e;
             }
-        }
+        });
     }
 
     public void interrupt() {
@@ -61,7 +65,14 @@ public class FilePolling {
     }
 
     public void schedule(Integer pollingTime) {
-        executorService = Executors.newSingleThreadScheduledExecutor();
+        if (pollingTime == null || pollingTime < 1) {
+            throw new IllegalArgumentException("Polling interval must be at least one second");
+        }
+        executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "file-viewer-polling");
+            thread.setDaemon(true);
+            return thread;
+        });
         executorService.scheduleAtFixedRate(this::checkOpenedFile, 2, pollingTime, TimeUnit.SECONDS);
     }
 }

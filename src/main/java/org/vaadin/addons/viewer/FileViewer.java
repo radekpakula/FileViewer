@@ -3,6 +3,7 @@ package org.vaadin.addons.viewer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,8 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
         this.setPadding(false);
         this.setSpacing(false);
         this.setMargin(false);
-        this.system = new FileViewerSystem(fileViewerConfig, viewerSettings);
+        this.system = new FileViewerSystem(Objects.requireNonNull(fileViewerConfig, "fileViewerConfig"),
+                Objects.requireNonNull(viewerSettings, "viewerSettings"));
         this.fileTabSheet = new FileTabSheet(system);
         this.system.setFilePolling(new FilePolling(system, fileTabSheet));
         this.system.enablePolling(fileViewerConfig.pollingEnabled(), fileViewerConfig.pollingInterval());
@@ -94,6 +96,8 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
      * @param charset encoding used to decode the file
      */
     public void openFile(Path path, Charset charset) {
+        Objects.requireNonNull(path, "path");
+        Objects.requireNonNull(charset, "charset");
         LOG.debug("Open file {} using charset {}", path, charset);
         new FileOpenedEvent(fileTabSheet).fireEvent(FileInfo.of(path, charset));
     }
