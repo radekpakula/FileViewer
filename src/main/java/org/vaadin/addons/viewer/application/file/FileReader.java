@@ -30,6 +30,9 @@ public final class FileReader {
         limit = Math.min(limit, maxLine - offset);
         int index = offset / FileIndex.INDEX_PER_ROWINDEX_PER_ROW;
         long rowFrom = fileIndex.getPosition(index);
+        if (index > 0) {
+            rowFrom++;
+        }
         List<LineEntry> lines = new ArrayList<>();
         try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
             raf.seek(rowFrom);
