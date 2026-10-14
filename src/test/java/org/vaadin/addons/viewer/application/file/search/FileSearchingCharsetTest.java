@@ -171,7 +171,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenIgnoringCaseThenMatchingDoesNotDependOnDefaultLocale() throws Exception {
         Path file = tempDir.resolve("locale-search.log");
-        Files.writeString(file, "ISTANBUL\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "ISTANBUL\n", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("istanbul");
         form.setIgnoreCase(true);
@@ -190,7 +190,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenRegexIsInvalidThenDoesNotMutateExistingSearchResults() throws Exception {
         Path file = tempDir.resolve("invalid-regex.log");
-        Files.writeString(file, "match\\nother\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "match\nother\n", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("match");
         FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
