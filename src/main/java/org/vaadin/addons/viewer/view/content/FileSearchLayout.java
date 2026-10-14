@@ -81,7 +81,8 @@ public class FileSearchLayout extends VerticalLayout {
     }
 
     public void extendSearchEvent() {
-        if (searchBar.isAutoRefresh() && searchIndex != null && searchIndex.isFinishSearching()) {
+        if (system.getConfig().pollingEnabled() && searchBar.isAutoRefresh()
+                && searchIndex != null && searchIndex.isFinishSearching()) {
             int match = searchIndex.getMatchCount();
             FileSearching.search(searchBar.getForm(), searchIndex);
             if (match != searchIndex.getMatchCount()) {
