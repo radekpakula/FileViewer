@@ -18,6 +18,7 @@ public class FileTab extends Div {
     private boolean initialized = false;
     private FileContentGrid fileViewGrid;
     private FileSearchLayout searchView;
+    private boolean contentRewritten;
 
     public FileTab(FileViewerSystem system, FileInfo fileInfo) {
         this.system = system;
@@ -65,6 +66,9 @@ public class FileTab extends Div {
     }
 
     public void onCloseEvent() {
+        if (searchView != null) {
+            searchView.stopSearchEvent();
+        }
         getElement().removeFromParent();
     }
 
@@ -72,12 +76,25 @@ public class FileTab extends Div {
         return fileInfo;
     }
 
+    public void setContentRewritten(boolean contentRewritten) {
+        this.contentRewritten |= contentRewritten;
+    }
+
     public void fileWasChangedEvent() {
-        if (fileViewGrid != null) {
-            fileViewGrid.extendIndexEvent();
+        if (fileViewGrid == null) {
+            return;
+        }
+        if (contentRewritten) {
+            contentRewritten = false;
+            fileViewGrid.rebuildIndexEvent();
             if (searchView != null) {
-                searchView.extendSearchEvent();
+                searchView.rebuildForFileRewrite();
             }
+            return;
+        }
+        fileViewGrid.extendIndexEvent();
+        if (searchView != null) {
+            searchView.extendSearchEvent();
         }
     }
 
