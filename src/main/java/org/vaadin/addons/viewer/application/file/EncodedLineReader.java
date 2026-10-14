@@ -26,22 +26,28 @@ public final class EncodedLineReader {
 
     public String readLine() throws IOException {
         ByteArrayOutputStream line = new ByteArrayOutputStream();
-        boolean readAny = false;
         int value;
         while ((value = file.read()) != -1) {
-            readAny = true;
             if (value == '\n') {
-                byte[] bytes = line.toByteArray();
-                if (bytes.length > 0 && bytes[bytes.length - 1] == '\r') {
-                    bytes = Arrays.copyOf(bytes, bytes.length - 1);
+                return decodeLine(line);
+            }
+            if (value == '\r') {
+                long afterCarriageReturn = file.getFilePointer();
+                int next = file.read();
+                if (next != '\n' && next != -1) {
+                    file.seek(afterCarriageReturn);
                 }
-                return new String(bytes, charset);
+                return decodeLine(line);
             }
             line.write(value);
         }
-        if (!readAny && line.size() == 0) {
+        if (line.size() == 0) {
             return null;
         }
+        return new String(line.toByteArray(), charset);
+    }
+
+    private String decodeLine(ByteArrayOutputStream line) {
         return new String(line.toByteArray(), charset);
     }
 }
