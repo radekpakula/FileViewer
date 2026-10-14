@@ -2,6 +2,7 @@ package org.vaadin.addons.viewer.application.file;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -56,6 +57,9 @@ public final class FileReader {
     }
 
     public static List<LineSearchEntry> readLines(FileSearchIndex fileIndex, int from, int to) {
+        if (from < 0) {
+            throw new IllegalArgumentException("from must not be negative");
+        }
         List<LineSearchEntry> lines = new ArrayList<>();
         to = Math.min(to, fileIndex.getMatchCount());
         try (RandomAccessFile raf = new RandomAccessFile(fileIndex.getPath().toFile(), "r")) {
@@ -72,9 +76,13 @@ public final class FileReader {
     }
 
     public static LineSearchEntry readLine(Path path, long rowFrom, int lineNumber) {
+        return readLine(path, rowFrom, lineNumber, StandardCharsets.UTF_8);
+    }
+
+    public static LineSearchEntry readLine(Path path, long rowFrom, int lineNumber, Charset charset) {
         try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
             raf.seek(rowFrom);
-            return LineSearchEntry.of(new EncodedLineReader(raf, StandardCharsets.UTF_8).readLine(), lineNumber);
+            return LineSearchEntry.of(new EncodedLineReader(raf, charset).readLine(), lineNumber);
         } catch (IOException e) {
             throw new ViewerException(e);
         }
