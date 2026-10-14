@@ -86,7 +86,14 @@ public class FileSearchLayout extends VerticalLayout {
     }
 
     public void refreshSearchResultEvent(FileSearchIndex fileSearchIndex) {
-        system.getUi().access(() -> {
+        com.vaadin.flow.component.UI ui = system.getUi();
+        if (ui == null || !ui.isAttached()) {
+            return;
+        }
+        ui.access(() -> {
+            if (!ui.isAttached()) {
+                return;
+            }
             searchBar.refreshState(fileSearchIndex);
             resultGrid.getDataProvider().refreshAll();
             progressBar.setValue(fileSearchIndex.processingPercentage());
@@ -121,7 +128,11 @@ public class FileSearchLayout extends VerticalLayout {
                         incrementalSearchRunning.set(false);
                         if (error != null) {
                             LOG.warn("Unable to extend search results", error);
-                            system.getUi().access(() -> {
+                            com.vaadin.flow.component.UI ui = system.getUi();
+        if (ui == null || !ui.isAttached()) {
+            return;
+        }
+        ui.access(() -> {
                                 Notification notification = Notification.show(
                                         error.getCause() != null && error.getCause().getMessage() != null
                                                 ? error.getCause().getMessage() : "Search refresh failed");
