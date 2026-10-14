@@ -65,7 +65,14 @@ public class FilePolling {
     }
 
     public void schedule(Integer pollingTime) {
-        executorService = Executors.newSingleThreadScheduledExecutor();
+        if (pollingTime == null || pollingTime < 1) {
+            throw new IllegalArgumentException("Polling interval must be at least one second");
+        }
+        executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "file-viewer-polling");
+            thread.setDaemon(true);
+            return thread;
+        });
         executorService.scheduleAtFixedRate(this::checkOpenedFile, 2, pollingTime, TimeUnit.SECONDS);
     }
 }
