@@ -8,6 +8,13 @@ import org.vaadin.addons.viewer.FileViewer;
  */
 public class ViewerSettings {
 
+    public static final int MIN_FONT_SIZE = 8;
+    public static final int MAX_FONT_SIZE = 30;
+    public static final int MIN_LINE_HEIGHT = 8;
+    public static final int MAX_LINE_HEIGHT = 30;
+    public static final int MIN_ROW_HEIGHT = 14;
+    public static final int MAX_ROW_HEIGHT = 30;
+
     private int fontSize;
     private int lineHeight;
     private int rowHeight;
@@ -20,6 +27,9 @@ public class ViewerSettings {
      * @param rowHeight grid row height in pixels
      */
     public ViewerSettings(int fontSize, int lineHeight, int rowHeight) {
+        validateRange("fontSize", fontSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
+        validateRange("lineHeight", lineHeight, MIN_LINE_HEIGHT, MAX_LINE_HEIGHT);
+        validateRange("rowHeight", rowHeight, MIN_ROW_HEIGHT, MAX_ROW_HEIGHT);
         this.fontSize = fontSize;
         this.lineHeight = lineHeight;
         this.rowHeight = rowHeight;
@@ -35,6 +45,12 @@ public class ViewerSettings {
         return new ViewerSettings(20, 20, 18);
     }
 
+    private static void validateRange(String name, int value, int min, int max) {
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(name + " must be between " + min + " and " + max);
+        }
+    }
+
     /** @return text font size in pixels */
     public int getFontSize() {
         return fontSize;
@@ -42,6 +58,7 @@ public class ViewerSettings {
 
     /** @param fontSize text font size in pixels */
     public void setFontSize(int fontSize) {
+        validateRange("fontSize", fontSize, MIN_FONT_SIZE, MAX_FONT_SIZE);
         this.fontSize = fontSize;
     }
 
@@ -52,6 +69,7 @@ public class ViewerSettings {
 
     /** @param lineHeight text line height in pixels */
     public void setLineHeight(int lineHeight) {
+        validateRange("lineHeight", lineHeight, MIN_LINE_HEIGHT, MAX_LINE_HEIGHT);
         this.lineHeight = lineHeight;
     }
 
@@ -62,6 +80,7 @@ public class ViewerSettings {
 
     /** @param rowHeight grid row height in pixels */
     public void setRowHeight(int rowHeight) {
+        validateRange("rowHeight", rowHeight, MIN_ROW_HEIGHT, MAX_ROW_HEIGHT);
         this.rowHeight = rowHeight;
     }
 
