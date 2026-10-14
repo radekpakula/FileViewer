@@ -118,4 +118,19 @@ class FileIndexingCharsetTest {
         assertEquals(List.of("pierwsza", "druga żółć", "trzecia"),
                 FileReader.readLines(index, 0, 10).stream().map(e -> e.getLog()).toList());
     }
+
+    @Test
+    void whenFileBecomesUnreadableThenIndexingFailsWithoutAdvancingIndex() throws Exception {
+        Path file = tempDir.resolve("unreadable.log");
+        Files.writeString(file, "first\\n", StandardCharsets.UTF_8);
+        FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
+        long indexedSize = index.getIndexedSize();
+        int maxIndex = index.getMaxIndex();
+
+        Files.delete(file);
+
+        assertThrows(ViewerException.class, () -> FileIndexing.indexFile(index));
+        assertEquals(indexedSize, index.getIndexedSize());
+        assertEquals(maxIndex, index.getMaxIndex());
+    }
 }
