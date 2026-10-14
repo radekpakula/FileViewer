@@ -17,7 +17,7 @@ public final class EncodedLineReader {
         validateCharset(charset);
     }
 
-    private static void validateCharset(Charset charset) {
+    public static void validateCharset(Charset charset) {
         if (!Arrays.equals("\n".getBytes(charset), new byte[]{'\n'})
                 || !Arrays.equals("\r".getBytes(charset), new byte[]{'\r'})) {
             throw new IllegalArgumentException("Charset must encode CR and LF as single ASCII bytes: " + charset);
