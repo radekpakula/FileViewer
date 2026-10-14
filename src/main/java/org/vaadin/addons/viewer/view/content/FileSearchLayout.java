@@ -64,7 +64,11 @@ public class FileSearchLayout extends VerticalLayout {
     }
 
     public void searchCompleteEvent(FileSearchIndex fileIndex, Throwable error) {
-        system.getUi().access(() -> {
+        com.vaadin.flow.component.UI ui = system.getUi();
+        if (ui == null || !ui.isAttached()) {
+            return;
+        }
+        ui.access(() -> {
             searchBar.setSearchMode(false);
             progressBar.setValue(0);
             if (error == null && fileIndex != null) {
@@ -77,8 +81,8 @@ public class FileSearchLayout extends VerticalLayout {
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 notification.open();
             }
+            ui.push();
         });
-        system.getUi().push();
     }
 
     public void refreshSearchResultEvent(FileSearchIndex fileSearchIndex) {
