@@ -99,11 +99,15 @@ public class FileTab extends Div {
     }
 
     public void scrollToFirstLine() {
-        fileViewGrid.scrollToFirstLine();
+        if (fileViewGrid != null) {
+            fileViewGrid.scrollToFirstLine();
+        }
     }
 
     public void scrollToLastLine() {
-        fileViewGrid.scrollToLastLine();
+        if (fileViewGrid != null) {
+            fileViewGrid.scrollToLastLine();
+        }
     }
 
     public Div getLoader() {
