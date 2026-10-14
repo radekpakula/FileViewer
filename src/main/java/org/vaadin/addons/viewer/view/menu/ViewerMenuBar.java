@@ -7,6 +7,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.textfield.IntegerField;
 import org.vaadin.addons.viewer.FileViewerConfig;
@@ -19,7 +20,9 @@ public class ViewerMenuBar extends MenuBar {
 
     public ViewerMenuBar(FileViewerSystem system, FileTabSheet fileTabSheet, FileViewerConfig fileViewerConfig) {
         this.tabSheet = fileTabSheet;
-
+        this.addClassName("menu-block");
+        this.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
+        this.addThemeVariants(MenuBarVariant.LUMO_SMALL);
         addPoolingMenu(system, fileViewerConfig);
 
         this.addItem(VaadinIcon.ARROW_UP.create(), e -> scrollToTheBeginning());
