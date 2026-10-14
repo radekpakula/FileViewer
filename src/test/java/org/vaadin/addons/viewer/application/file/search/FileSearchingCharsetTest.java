@@ -83,7 +83,7 @@ class FileSearchingCharsetTest {
         Path file = tempDir.resolve("incremental-search.log");
         Files.writeString(file, "match one\nlast mat", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
-        form.setText("match");
+        form.setText("mat");
         FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
 
         FileSearching.search(form, index);
