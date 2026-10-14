@@ -119,6 +119,38 @@ class FileSearchingCharsetTest {
     }
 
     @Test
+    void whenIgnoreCaseChangesThenRebuildsSearchResults() throws Exception {
+        Path file = tempDir.resolve("ignore-case.log");
+        Files.writeString(file, "Alpha\nalpha\n", StandardCharsets.UTF_8);
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("alpha");
+
+        FileSearching.search(form, index);
+        assertEquals(1, index.getMatchCount());
+
+        form.setIgnoreCase(true);
+        FileSearching.search(form, index);
+
+        assertEquals(2, index.getMatchCount());
+    }
+
+    @Test
+    void whenPollingWithoutFileChangesThenKeepsExistingResults() throws Exception {
+        Path file = tempDir.resolve("unchanged.log");
+        Files.writeString(file, "match\nother\n", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("match");
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+
+        FileSearching.search(form, index);
+        FileSearching.search(form, index);
+
+        assertEquals(1, index.getMatchCount());
+        assertEquals(1, index.getCursor(0).getLine());
+    }
+
+    @Test
     void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
         Path file = tempDir.resolve("utf16.log");
         Files.writeString(file, "first\nsecond", StandardCharsets.UTF_16LE);
