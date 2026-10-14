@@ -1,4 +1,4 @@
-package org.vaadin.addons.mygroup;
+package org.vaadin.addons.viewer;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.testbench.BrowserTest;

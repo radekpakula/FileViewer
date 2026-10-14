@@ -22,7 +22,7 @@ public class SearchResultGrid extends Grid<LineSearchEntry> {
         addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
         addThemeVariants(GridVariant.LUMO_COMPACT);
         addThemeName("log");
-
+        addClassName("file-viewer-grid");
         setSizeFull();
         setPageSize(FileSearchIndex.RESULT_PER_PAGE);
 

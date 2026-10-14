@@ -32,6 +32,7 @@ public class FileContentGrid extends Grid<LineEntry> {
         addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
         addThemeVariants(GridVariant.LUMO_COMPACT);
         addThemeName("log");
+        addClassName("file-viewer-grid");
         setSizeFull();
         setPageSize(FileIndex.INDEX_PER_ROWINDEX_PER_ROW);
 

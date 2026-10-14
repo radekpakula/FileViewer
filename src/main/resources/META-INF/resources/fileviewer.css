@@ -1,0 +1,17 @@
+vaadin-grid.file-viewer-grid::part(body-cell) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+vaadin-grid.file-viewer-grid::part(details-cell) {
+    white-space: normal;
+    overflow-wrap: normal;
+}
+
+vaadin-grid.file-viewer-grid::part(body-cell) {
+    color: var(--lumo-body-text-color);
+}
+
+.polling-interval{
+
+}

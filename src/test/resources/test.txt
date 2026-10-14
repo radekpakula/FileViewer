@@ -7,7 +7,7 @@
 [WARNING] The requ%                                                                                                                                                                                                             radosawpakua@MacBook-Pro-Radosaw FileViewer % mvn jetty:run -Pdevelopment -Pport=8099
 [INFO] Scanning for projects...
 [INFO]
-[INFO] ---------------< org.vaadin.addons.mygroup:file-viewer >----------------
+[INFO] ---------------< org.vaadin.addons.viewer:file-viewer >----------------
 [INFO] Building File viewer for Vaadin 2.0.1
 [INFO] --------------------------------[ jar ]---------------------------------
 [INFO]

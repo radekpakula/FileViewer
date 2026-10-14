@@ -1,13 +1,8 @@
-package org.vaadin.addons.mygroup;
+package org.vaadin.addons.viewer;
 
 import java.io.File;
 
-import org.vaadin.addons.viewer.FileViewer;
-import org.vaadin.addons.viewer.FileViewerConfig;
-
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
 @Route("")

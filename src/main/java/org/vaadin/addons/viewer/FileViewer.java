@@ -1,5 +1,6 @@
 package org.vaadin.addons.viewer;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.ElementDetachListener;
@@ -15,6 +16,7 @@ import org.vaadin.addons.viewer.view.menu.ViewerMenuBar;
 
 import java.nio.file.Path;
 
+@StyleSheet("fileviewer.css")
 public class FileViewer extends VerticalLayout implements ElementDetachListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileViewer.class);
@@ -32,7 +34,10 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
         this.setPadding(false);
         this.setSpacing(false);
         this.setMargin(false);
+        var resource = FileViewer.class.getClassLoader()
+                .getResource("META-INF/resources/fileviewer.css");
 
+        System.out.println(resource);
         this.system = new FileViewerSystem(fileViewerConfig, ViewerSettings.base());
 
         this.fileTabSheet = new FileTabSheet(system);
