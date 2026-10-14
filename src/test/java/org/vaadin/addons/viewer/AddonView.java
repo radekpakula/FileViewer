@@ -39,6 +39,9 @@ public class AddonView extends Div {
         add(viewer);
 
         viewer.openFile(new File("src/test/resources/test.txt").toPath(), Charset.defaultCharset());
+        //return current configuration for futher processing
+        viewer.getViewerSettings();
+        viewer.getViewerConfig();
     }
 
 }
