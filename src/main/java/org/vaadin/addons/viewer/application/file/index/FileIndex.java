@@ -2,15 +2,18 @@ package org.vaadin.addons.viewer.application.file.index;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import org.vaadin.addons.viewer.application.file.EncodedLineReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.vaadin.addons.viewer.application.file.EncodedLineReader;
+
 public class FileIndex {
 
-    public static final int INDEX_PER_ROWINDEX_PER_ROW = 50;
+    public static final int LINES_PER_INDEX_PAGE = 50;
+    @Deprecated
+    public static final int INDEX_PER_ROWINDEX_PER_ROW = LINES_PER_INDEX_PAGE;
 
     private final Path path;
     private final Charset charset;
@@ -23,8 +26,8 @@ public class FileIndex {
     }
 
     public FileIndex(Path path, Charset charset) {
-        this.path = Objects.requireNonNull(path);
-        this.charset = Objects.requireNonNull(charset);
+        this.path = Objects.requireNonNull(path, "path");
+        this.charset = Objects.requireNonNull(charset, "charset");
         EncodedLineReader.validateCharset(charset);
         lineCursor.add(0L);
     }
@@ -61,7 +64,7 @@ public class FileIndex {
     }
 
     void newLineAtPosition(long position) {
-        if (++linesCount % INDEX_PER_ROWINDEX_PER_ROW == 0) {
+        if (++linesCount % LINES_PER_INDEX_PAGE == 0) {
             lineCursor.add(position);
         }
     }
