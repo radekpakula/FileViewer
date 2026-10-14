@@ -79,6 +79,46 @@ class FileSearchingCharsetTest {
     }
 
     @Test
+    void whenPollingWithUnchangedFiltersThenSearchesOnlyAppendedContent() throws Exception {
+        Path file = tempDir.resolve("incremental-search.log");
+        Files.writeString(file, "match one\\nlast mat", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("match");
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+
+        FileSearching.search(form, index);
+        assertEquals(2, index.getMatchCount());
+        assertEquals(2, index.getCursor(1).getLine());
+
+        Files.writeString(file, "ch completed\\nmatch three\\n", StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.APPEND);
+        FileSearching.search(form, index);
+
+        assertEquals(3, index.getMatchCount());
+        assertEquals(2, index.getCursor(1).getLine());
+        assertEquals(3, index.getCursor(2).getLine());
+        assertEquals("last match completed", FileReader.readLines(index, 1, 2).get(0).getLine());
+    }
+
+    @Test
+    void whenSearchFiltersChangeThenRebuildsSearchResults() throws Exception {
+        Path file = tempDir.resolve("changed-filters.log");
+        Files.writeString(file, "alpha\\nbeta\\n", StandardCharsets.UTF_8);
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("alpha");
+
+        FileSearching.search(form, index);
+        assertEquals(1, index.getMatchCount());
+
+        form.setText("beta");
+        FileSearching.search(form, index);
+
+        assertEquals(1, index.getMatchCount());
+        assertEquals(2, index.getCursor(0).getLine());
+    }
+
+    @Test
     void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
         Path file = tempDir.resolve("utf16.log");
         Files.writeString(file, "first\nsecond", StandardCharsets.UTF_16LE);
