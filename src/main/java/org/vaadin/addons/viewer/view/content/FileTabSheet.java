@@ -72,6 +72,10 @@ public class FileTabSheet extends TabSheet {
     }
 
     public void closeTab(Tab tab) {
+        FileTab content = tabMap.get(tab);
+        if (content != null) {
+            content.onCloseEvent();
+        }
         remove(tab);
         tabMap.remove(tab);
     }
