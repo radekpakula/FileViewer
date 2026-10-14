@@ -14,15 +14,15 @@ import org.vaadin.addons.viewer.view.content.FilePolling;
 import org.vaadin.addons.viewer.view.content.FileTabSheet;
 import org.vaadin.addons.viewer.view.menu.ViewerMenuBar;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 @StyleSheet("fileviewer.css")
 public class FileViewer extends VerticalLayout implements ElementDetachListener {
-
     private static final Logger LOG = LoggerFactory.getLogger(FileViewer.class);
     private final FileViewerSystem system;
     private final ViewerMenuBar menuBar;
-
     private final FileTabSheet fileTabSheet;
 
     public FileViewer() {
@@ -34,19 +34,12 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
         this.setPadding(false);
         this.setSpacing(false);
         this.setMargin(false);
-        var resource = FileViewer.class.getClassLoader()
-                .getResource("META-INF/resources/fileviewer.css");
-
-        System.out.println(resource);
         this.system = new FileViewerSystem(fileViewerConfig, ViewerSettings.base());
-
         this.fileTabSheet = new FileTabSheet(system);
         this.system.setFilePolling(new FilePolling(system, fileTabSheet));
         this.system.enablePolling(fileViewerConfig.pollingEnabled(), fileViewerConfig.pollingInterval());
-
         this.menuBar = new ViewerMenuBar(system, fileTabSheet, fileViewerConfig);
         add(menuBar);
-
         add(fileTabSheet);
         this.fileTabSheet.initializeVisibleTab();
     }
@@ -57,8 +50,12 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
     }
 
     public void openFile(Path path) {
-        LOG.debug("Open file {}", path);
-        new FileOpenedEvent(fileTabSheet).fireEvent(FileInfo.of(path));
+        openFile(path, StandardCharsets.UTF_8);
+    }
+
+    public void openFile(Path path, Charset charset) {
+        LOG.debug("Open file {} using charset {}", path, charset);
+        new FileOpenedEvent(fileTabSheet).fireEvent(FileInfo.of(path, charset));
     }
 
     @Override
@@ -66,7 +63,6 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
         onCloseEvent();
     }
 
-    //UI access
     public ViewerMenuBar getMenuBar() {
         return menuBar;
     }
