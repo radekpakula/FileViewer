@@ -85,6 +85,17 @@ public class FileSearchLayout extends VerticalLayout {
         });
     }
 
+    public void rebuildForFileRewrite() {
+        searchEvent.terminate();
+        searchBar.setSearchMode(false);
+        searchIndex = new FileSearchIndex(fileInfo.getFile().toPath(), fileInfo.getCharset());
+        resultGrid.setResult(searchIndex);
+        resultGrid.getDataProvider().refreshAll();
+        if (searchBar.isValid()) {
+            startSearchEvent();
+        }
+    }
+
     public void extendSearchEvent() {
         if (system.getConfig().pollingEnabled() && searchBar.isAutoRefresh()
                 && searchIndex != null && searchIndex.isFinishSearching()) {
