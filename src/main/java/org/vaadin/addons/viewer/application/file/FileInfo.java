@@ -23,6 +23,7 @@ public class FileInfo {
         }
         this.file = file;
         this.charset = Objects.requireNonNull(charset, "charset");
+        EncodedLineReader.validateCharset(charset);
         this.length = file.length();
     }
 
