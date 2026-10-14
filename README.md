@@ -105,7 +105,7 @@ boolean searchVisible = currentConfig.searchViewVisible();
 boolean fontResizeAllowed = currentConfig.fontResizeAllowed();
 ```
 
-`getViewerConfig()` returns the configuration object supplied when the viewer was created. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
+`getViewerConfig()` returns a snapshot of the feature configuration and the current polling state. It is intended for inspection, not for changing the running viewer. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
 
 ## Initial font and row settings
 
