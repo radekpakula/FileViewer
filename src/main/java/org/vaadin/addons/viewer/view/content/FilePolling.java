@@ -11,57 +11,82 @@ import org.slf4j.LoggerFactory;
 import org.vaadin.addons.viewer.system.FileViewerSystem;
 
 /**
- * Polling files task. Checks all open files for size changes.
- * If the file has been changed, the tab id extended about information icon, and the open tab receives information
- * that the content needs to be updated.
+ * Periodically checks open files for changes and refreshes the selected tab or
+ * marks inactive tabs as changed. Component state is accessed only through
+ * the Vaadin UI thread.
  */
 public class FilePolling {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilePolling.class);
 
+    private final FileViewerSystem system;
     private final FileTabSheet fileTabSheet;
     private ScheduledExecutorService executorService;
-    private final UI ui;
 
     public FilePolling(FileViewerSystem system, FileTabSheet fileTabSheet) {
+        this.system = system;
         this.fileTabSheet = fileTabSheet;
-        this.ui = system.getUi();
     }
 
-    private void checkOpenedFile() {
-        if (!ui.isAttached()) {
+    private void scheduleCheck() {
+        UI ui = system.getUi();
+        if (ui == null || !ui.isAttached()) {
+            LOG.debug("Skipping file polling because the UI is unavailable or detached");
             interrupt();
-            LOG.info("Interrupt file polling because of detached UI");
             return;
         }
+
+        ui.access(() -> {
+            if (!ui.isAttached()) {
+                interrupt();
+                return;
+            }
+            checkOpenedFilesOnUiThread();
+        });
+    }
+
+    private void checkOpenedFilesOnUiThread() {
         for (Tab tab : fileTabSheet.getTabs()) {
             FileTab tabContent = fileTabSheet.getByTab(tab);
+            if (tabContent == null) {
+                continue;
+            }
             try {
-                if (tabContent.getFileInfo().isFileChanged()) {
-                    tabContent.getFileInfo().updateFileLength();
-                    if (!fileTabSheet.getSelectedTab().equals(tab)) {
-                        fileTabSheet.markTabWithAnInformationIcon(tab);
-
-                    } else {
-                        tabContent.fileWasChangedEvent();
-                    }
+                if (!tabContent.getFileInfo().isFileChanged()) {
+                    continue;
+                }
+                boolean contentRewritten = tabContent.getFileInfo().isContentRewritten();
+                tabContent.getFileInfo().updateFileLength();
+                tabContent.setContentRewritten(contentRewritten);
+                Tab selectedTab = fileTabSheet.getSelectedTab();
+                if (selectedTab == null || !selectedTab.equals(tab)) {
+                    fileTabSheet.markTabWithAnInformationIcon(tab);
+                } else {
+                    tabContent.fileWasChangedEvent();
                 }
             } catch (Exception e) {
-                LOG.error("Error during polling file ",e);
-                throw e;
+                LOG.error("Error while polling file {}", tabContent.getFileInfo().getFile(), e);
             }
         }
     }
 
-    public void interrupt() {
+    public synchronized void interrupt() {
         if (executorService != null) {
-            executorService.shutdown();
+            executorService.shutdownNow();
             executorService = null;
         }
     }
 
-    public void schedule(Integer pollingTime) {
-        executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(this::checkOpenedFile, 2, pollingTime, TimeUnit.SECONDS);
+    public synchronized void schedule(Integer pollingTime) {
+        interrupt();
+        if (pollingTime == null || pollingTime < 1) {
+            throw new IllegalArgumentException("Polling interval must be at least one second");
+        }
+        executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "file-viewer-polling");
+            thread.setDaemon(true);
+            return thread;
+        });
+        executorService.scheduleAtFixedRate(this::scheduleCheck, 2, pollingTime, TimeUnit.SECONDS);
     }
 }
