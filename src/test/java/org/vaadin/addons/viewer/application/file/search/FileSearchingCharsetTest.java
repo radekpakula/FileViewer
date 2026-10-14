@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -167,6 +166,43 @@ class FileSearchingCharsetTest {
 
         assertEquals(2, index.getMatchCount());
         assertEquals(2, index.getCursor(1).getLine());
+    }
+
+    @Test
+    void whenIgnoringCaseThenMatchingDoesNotDependOnDefaultLocale() throws Exception {
+        Path file = tempDir.resolve("locale-search.log");
+        Files.writeString(file, "ISTANBUL\n", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("istanbul");
+        form.setIgnoreCase(true);
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+        java.util.Locale previousLocale = java.util.Locale.getDefault();
+        try {
+            java.util.Locale.setDefault(java.util.Locale.forLanguageTag("tr-TR"));
+            FileSearching.search(form, index);
+        } finally {
+            java.util.Locale.setDefault(previousLocale);
+        }
+
+        assertEquals(1, index.getMatchCount());
+    }
+
+    @Test
+    void whenRegexIsInvalidThenDoesNotMutateExistingSearchResults() throws Exception {
+        Path file = tempDir.resolve("invalid-regex.log");
+        Files.writeString(file, "match\nother\n", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("match");
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+        FileSearching.search(form, index);
+        assertEquals(1, index.getMatchCount());
+
+        form.setText("[");
+        form.setRegex(true);
+        assertThrows(java.util.regex.PatternSyntaxException.class, () -> FileSearching.search(form, index));
+
+        assertEquals(1, index.getMatchCount());
+        assertEquals(1, index.getCursor(0).getLine());
     }
 
     @Test
