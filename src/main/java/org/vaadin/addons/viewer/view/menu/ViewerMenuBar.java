@@ -47,7 +47,7 @@ public class ViewerMenuBar extends MenuBar {
         fontSize.setStepButtonsVisible(true);
         fontSubMenu.addItem(fontSize);
         fontSize.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
+            if (e.getValue() != null && e.getValue() >= 8 && e.getValue() <= 30) {
                 tabSheet.getElement().getStyle().set("--grid-font-size", e.getValue() + "px");
                 system.getViewerSettings().setFontSize(e.getValue());
             }
@@ -61,7 +61,7 @@ public class ViewerMenuBar extends MenuBar {
         lineHeight.setStepButtonsVisible(true);
         fontSubMenu.addItem(lineHeight);
         lineHeight.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
+            if (e.getValue() != null && e.getValue() >= 8 && e.getValue() <= 30) {
                 tabSheet.getElement().getStyle().set("--grid-line-height", e.getValue() + "px");
                 system.getViewerSettings().setLineHeight(e.getValue());
             }
@@ -75,7 +75,7 @@ public class ViewerMenuBar extends MenuBar {
         rowHeight.setStepButtonsVisible(true);
         fontSubMenu.addItem(rowHeight);
         rowHeight.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
+            if (e.getValue() != null && e.getValue() >= 14 && e.getValue() <= 30) {
                 tabSheet.getElement().getStyle().set("--grid-row-height", e.getValue() + "px");
                 system.getViewerSettings().setRowHeight(e.getValue());
             }
@@ -103,7 +103,7 @@ public class ViewerMenuBar extends MenuBar {
         this.addItem(pollingIntervalField);
 
         pollingIntervalField.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
+            if (e.getValue() != null && e.getValue() >= 1 && e.getValue() <= 30) {
                 system.enablePolling(pollingEnabled.getValue(), e.getValue());
             }
         });
