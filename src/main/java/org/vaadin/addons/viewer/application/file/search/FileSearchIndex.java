@@ -75,6 +75,17 @@ public class FileSearchIndex {
         lineCursor.removeIf(result -> result.getLine() >= firstLine);
     }
 
+    void prepareIncrementalSearch(long position, boolean reprocessLastLine) {
+        searchDone = false;
+        interrupt = false;
+        processingTime = 0;
+        processingPosition = position;
+        if (reprocessLastLine) {
+            removeResultsFromLine(lineCounter);
+            lineCounter = Math.max(0, lineCounter - 1);
+        }
+    }
+
     void reset() {
         lineCursor.clear();
         searchDone = false;
