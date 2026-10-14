@@ -13,6 +13,9 @@ import org.vaadin.addons.viewer.application.file.search.FileSearching;
 import org.vaadin.addons.viewer.system.FileViewerSystem;
 import org.vaadin.addons.viewer.event.FileSearchEvent;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class FileSearchLayout extends VerticalLayout {
     private static final Logger LOG = LoggerFactory.getLogger(FileSearchLayout.class);
     private final SearchResultGrid resultGrid;
@@ -22,6 +25,7 @@ public class FileSearchLayout extends VerticalLayout {
     private final SearchBarFields searchBar;
     private final FileSearchEvent searchEvent;
     private FileSearchIndex searchIndex;
+    private final AtomicBoolean incrementalSearchRunning = new AtomicBoolean();
 
     FileSearchLayout(FileViewerSystem system, FileInfo fileInfo, FileContentGrid fileViewGrid) {
         this.setSizeFull();
@@ -99,14 +103,36 @@ public class FileSearchLayout extends VerticalLayout {
     public void extendSearchEvent() {
         if (system.getConfig().pollingEnabled() && searchBar.isAutoRefresh()
                 && searchIndex != null && searchIndex.isFinishSearching()) {
-            int previousMatchCount = searchIndex.getMatchCount();
-            FileSearching.search(searchBar.getForm(), searchIndex);
-            if (previousMatchCount != searchIndex.getMatchCount()) {
-                system.getUi().access(() -> {
-                    searchBar.refreshState(searchIndex);
-                    resultGrid.getDataProvider().refreshAll();
-                });
+            if (!incrementalSearchRunning.compareAndSet(false, true)) {
+                return;
             }
+            FileSearchIndex indexToSearch = searchIndex;
+            org.vaadin.addons.viewer.application.file.search.SearchForm criteria = new org.vaadin.addons.viewer.application.file.search.SearchForm();
+            criteria.setText(searchBar.getForm().getText());
+            criteria.setIgnoreCase(searchBar.getForm().isIgnoreCase());
+            criteria.setRegex(searchBar.getForm().isRegex());
+            int previousMatchCount = indexToSearch.getMatchCount();
+            CompletableFuture.supplyAsync(() -> FileSearching.search(criteria, indexToSearch))
+                    .whenComplete((updatedIndex, error) -> {
+                        incrementalSearchRunning.set(false);
+                        if (error != null) {
+                            LOG.warn("Unable to extend search results", error);
+                            system.getUi().access(() -> {
+                                Notification notification = Notification.show(
+                                        error.getCause() != null && error.getCause().getMessage() != null
+                                                ? error.getCause().getMessage() : "Search refresh failed");
+                                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                                notification.open();
+                            });
+                            return;
+                        }
+                        if (searchIndex == indexToSearch && previousMatchCount != updatedIndex.getMatchCount()) {
+                            system.getUi().access(() -> {
+                                searchBar.refreshState(updatedIndex);
+                                resultGrid.getDataProvider().refreshAll();
+                            });
+                        }
+                    });
         }
     }
 
