@@ -43,28 +43,33 @@ public class FileSearchLayout extends VerticalLayout {
     }
 
     void startSearchEvent() {
-        if (searchBar.isValid()) {
-            LOG.debug("Start searching in file {}", fileInfo.getFile());
-            searchBar.setSearchMode(true);
-            this.searchIndex = new FileSearchIndex(fileInfo.getFile().toPath(), fileInfo.getCharset());
-            resultGrid.setResult(searchIndex);
-            searchEvent.search(searchBar.getForm(), searchIndex);
+        if (!searchBar.isValid()) {
+            return;
         }
+        LOG.debug("Start searching in file {}", fileInfo.getFile());
+        searchEvent.terminate();
+        searchBar.setSearchMode(true);
+        this.searchIndex = new FileSearchIndex(fileInfo.getFile().toPath(), fileInfo.getCharset());
+        resultGrid.setResult(searchIndex);
+        searchEvent.search(searchBar.getForm(), searchIndex);
     }
 
     void stopSearchEvent() {
         searchEvent.terminate();
+        searchBar.setSearchMode(false);
     }
 
     public void searchCompleteEvent(FileSearchIndex fileIndex, Throwable error) {
         system.getUi().access(() -> {
             searchBar.setSearchMode(false);
-            searchBar.refreshState(fileIndex);
             progressBar.setValue(0);
-            if (error == null) {
+            if (error == null && fileIndex != null) {
+                searchBar.refreshState(fileIndex);
                 resultGrid.getDataProvider().refreshAll();
-            } else {
-                Notification notification = Notification.show(error.getMessage());
+            } else if (error != null) {
+                Throwable cause = error.getCause() == null ? error : error.getCause();
+                String message = cause.getMessage() == null ? "Search failed" : cause.getMessage();
+                Notification notification = Notification.show(message);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 notification.open();
             }
@@ -83,9 +88,9 @@ public class FileSearchLayout extends VerticalLayout {
     public void extendSearchEvent() {
         if (system.getConfig().pollingEnabled() && searchBar.isAutoRefresh()
                 && searchIndex != null && searchIndex.isFinishSearching()) {
-            int match = searchIndex.getMatchCount();
+            int previousMatchCount = searchIndex.getMatchCount();
             FileSearching.search(searchBar.getForm(), searchIndex);
-            if (match != searchIndex.getMatchCount()) {
+            if (previousMatchCount != searchIndex.getMatchCount()) {
                 system.getUi().access(() -> {
                     searchBar.refreshState(searchIndex);
                     resultGrid.getDataProvider().refreshAll();
