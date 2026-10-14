@@ -1,6 +1,9 @@
-
 package org.vaadin.addons.viewer.view.content;
-import com.vaadin.flow.component.AttachEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
@@ -14,61 +17,55 @@ import org.vaadin.addons.viewer.application.file.index.FileIndexing;
 import org.vaadin.addons.viewer.application.file.index.LineEntry;
 import org.vaadin.addons.viewer.system.FileViewerSystem;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
 public class FileContentGrid extends Grid<LineEntry> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileContentGrid.class);
     private final FileIndex fileIndex;
     private final FileViewerSystem system;
 
-    FileContentGrid(FileViewerSystem system, FileIndex fileMap) {
+    FileContentGrid(FileViewerSystem system, FileIndex fileIndex) {
         super(LineEntry.class, false);
         this.system = system;
-        this.fileIndex = fileMap;
-        addThemeVariants(GridVariant.LUMO_NO_BORDER);
-        addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS);
-        addThemeVariants(GridVariant.LUMO_COMPACT);
+        this.fileIndex = fileIndex;
+        addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_NO_ROW_BORDERS, GridVariant.LUMO_COMPACT);
         addThemeName("log");
         addClassName("file-viewer-grid");
         setSizeFull();
-        setPageSize(FileIndex.INDEX_PER_ROWINDEX_PER_ROW);
+        setPageSize(FileIndex.LINES_PER_INDEX_PAGE);
 
-        Column<LineEntry> indexCol = addColumn(item -> "")
+        Column<LineEntry> indexColumn = addColumn(item -> "")
                 .setWidth("80px")
                 .setFlexGrow(0)
                 .setKey("rowIndex")
-                .setPartNameGenerator(e -> "ident").setFrozen(true);
+                .setPartNameGenerator(e -> "ident")
+                .setFrozen(true);
         addColumn(LineEntry::getLog);
         setItems((CallbackDataProvider.FetchCallback<LineEntry, Void>) query -> {
-            List<LineEntry> list;
+            List<LineEntry> lines;
             try {
-                list = FileReader.readLines(fileMap, query.getOffset(), query.getLimit());
+                lines = FileReader.readLines(fileIndex, query.getOffset(), query.getLimit());
             } catch (ViewerException e) {
                 return generateEmptyResult(query, e);
             }
-            LOG.debug("returned {} elements", list.size());
-            refreshIndexColumn(indexCol);
-            return list.stream();
-        }, query -> fileMap.getMaxIndex() + 1);
+            LOG.debug("Returned {} lines", lines.size());
+            refreshIndexColumn(indexColumn);
+            return lines.stream();
+        }, query -> fileIndex.getMaxIndex() + 1);
 
-        refreshIndexColumn(indexCol);
+        refreshIndexColumn(indexColumn);
     }
 
-    private static Stream<LineEntry> generateEmptyResult(Query<LineEntry, Void> query,
-                                                         ViewerException e) {
-        List<LineEntry> list = new ArrayList<>();
-        LOG.error(e.getMessage());
+    private static Stream<LineEntry> generateEmptyResult(Query<LineEntry, Void> query, ViewerException error) {
+        LOG.error("Unable to read file page", error);
+        List<LineEntry> lines = new ArrayList<>();
         for (int i = 0; i < query.getLimit(); i++) {
-            list.add(LineEntry.of(""));
+            lines.add(LineEntry.of(""));
         }
-        return list.stream();
+        return lines.stream();
     }
 
-    private static void refreshIndexColumn(Column<LineEntry> indexCol) {
-        indexCol.getElement().executeJs(
+    private static void refreshIndexColumn(Column<LineEntry> indexColumn) {
+        indexColumn.getElement().executeJs(
                 "this.renderer = function(root, column, rowData) {root.textContent = rowData.index+1}"
         );
     }
@@ -81,10 +78,10 @@ public class FileContentGrid extends Grid<LineEntry> {
         scrollToIndex(fileIndex.getMaxIndex());
     }
 
-    public void selectLineByIndex(int i) {
-        LineEntry entry = getLazyDataView().getItem(i);
+    public void selectLineByIndex(int index) {
+        LineEntry entry = getLazyDataView().getItem(index);
         getSelectionModel().select(entry);
-        scrollToIndex(i);
+        scrollToIndex(index);
     }
 
     public void extendIndexEvent() {
@@ -95,10 +92,5 @@ public class FileContentGrid extends Grid<LineEntry> {
                 scrollToIndex(fileIndex.getMaxIndex());
             }
         });
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent){
-        super.onAttach(attachEvent);
     }
 }
