@@ -54,7 +54,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenSearchingFileWithoutTrailingNewlineThenFindsLastLine() throws Exception {
         Path file = tempDir.resolve("no-trailing-newline.log");
-        Files.writeString(file, "first\\nlast match", StandardCharsets.UTF_8);
+        Files.writeString(file, "first\nlast match", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("match");
 
@@ -81,7 +81,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenPollingWithUnchangedFiltersThenSearchesOnlyAppendedContent() throws Exception {
         Path file = tempDir.resolve("incremental-search.log");
-        Files.writeString(file, "match one\\nlast mat", StandardCharsets.UTF_8);
+        Files.writeString(file, "match one\nlast mat", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("match");
         FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
@@ -90,7 +90,7 @@ class FileSearchingCharsetTest {
         assertEquals(2, index.getMatchCount());
         assertEquals(2, index.getCursor(1).getLine());
 
-        Files.writeString(file, "ch completed\\nmatch three\\n", StandardCharsets.UTF_8,
+        Files.writeString(file, "ch completed\nmatch three\n", StandardCharsets.UTF_8,
                 java.nio.file.StandardOpenOption.APPEND);
         FileSearching.search(form, index);
 
@@ -103,7 +103,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenSearchFiltersChangeThenRebuildsSearchResults() throws Exception {
         Path file = tempDir.resolve("changed-filters.log");
-        Files.writeString(file, "alpha\\nbeta\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "alpha\nbeta\n", StandardCharsets.UTF_8);
         FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("alpha");
