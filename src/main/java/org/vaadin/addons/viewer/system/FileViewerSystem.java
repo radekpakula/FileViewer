@@ -22,7 +22,7 @@ public class FileViewerSystem {
 
     public FileViewerSystem(FileViewerConfig config, ViewerSettings viewerSettings) {
         this.config = Objects.requireNonNull(config, "config");
-        this.viewerSettings = Objects.requireNonNull(viewerSettings, "viewerSettings");
+        this.viewerSettings = Objects.requireNonNull(viewerSettings, "viewerSettings").getCopy();
         this.pollingEnabled = config.pollingEnabled();
         this.pollingInterval = config.pollingInterval();
     }
