@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class FileSearchIndex {
-
     public static final int RESULT_PER_PAGE = 20;
-
     private final Path path;
     private final Charset charset;
     private final List<FileSearchResultLine> lineCursor = new ArrayList<>();
@@ -30,89 +28,40 @@ public class FileSearchIndex {
         this.charset = Objects.requireNonNull(charset);
     }
 
-    public Charset getCharset() {
-        return charset;
-    }
-
-    public int getMatchCount() {
-        return lineCursor.size();
-    }
-
-    public Path getPath() {
-        return path;
-    }
-
-    public FileSearchResultLine getCursor(int i) {
-        return lineCursor.get(i);
-    }
-
-    public long getProcessingTime() {
-        return processingTime;
-    }
-
-    void setProcessingTime(long processingTime) {
-        this.processingTime = processingTime;
-    }
+    public Charset getCharset() { return charset; }
+    public int getMatchCount() { return lineCursor.size(); }
+    public Path getPath() { return path; }
+    public FileSearchResultLine getCursor(int i) { return lineCursor.get(i); }
+    public long getProcessingTime() { return processingTime; }
+    void setProcessingTime(long processingTime) { this.processingTime = processingTime; }
 
     public double processingPercentage() {
-        if (fileSize == 0) {
-            return searchDone ? 1 : 0;
-        }
+        if (fileSize == 0) return searchDone ? 1 : 0;
         return Math.min(1, (double) processingPosition / fileSize);
     }
 
-    public void interrupt() {
-        this.interrupt = true;
-    }
+    public void interrupt() { this.interrupt = true; }
+    public boolean isFinishSearching() { return searchDone; }
+    void increaseLineCounter() { ++lineCounter; }
+    int getLineCounter() { return lineCounter; }
+    void addPointer(FileSearchResultLine result) { lineCursor.add(result); }
+    long getProcessingPosition() { return processingPosition; }
+    void setProcessingPosition(long position) { processingPosition = position; }
+    long getFileSize() { return fileSize; }
+    boolean isInterrupt() { return interrupt; }
+    void setSearchDone() { searchDone = true; }
 
-    public boolean isFinishSearching() {
-        return searchDone;
-    }
-
-    void increaseLineCounter() {
-        ++lineCounter;
-    }
-
-    int getLineCounter() {
-        return lineCounter;
-    }
-
-    FileSearchResultLine getLastEntry() {
-        return lineCursor.get(lineCursor.size() - 1);
-    }
-
-    void removeLastEntryIfEqualToCurrent(long beginningOfTheLineMarker) {
-        if (getLineCounter() > 0 && getLastEntry().getPosition() == beginningOfTheLineMarker) {
-            lineCursor.remove(lineCursor.size() - 1);
-            --lineCounter;
-        }
+    void reset() {
+        lineCursor.clear();
+        searchDone = false;
+        processingTime = 0;
+        processingPosition = 0;
+        lineCounter = 0;
+        interrupt = false;
+        updateFileSize();
     }
 
     void updateFileSize() {
-        this.fileSize = getPath().toFile().length();
-    }
-
-    void addPointer(FileSearchResultLine result) {
-        lineCursor.add(result);
-    }
-
-    long getProcessingPosition() {
-        return processingPosition;
-    }
-
-    void increasePosition() {
-        processingPosition++;
-    }
-
-    long getFileSize() {
-        return fileSize;
-    }
-
-    boolean isInterrupt() {
-        return interrupt;
-    }
-
-    void setSearchDone() {
-        this.searchDone = true;
+        fileSize = getPath().toFile().length();
     }
 }
