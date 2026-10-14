@@ -52,6 +52,33 @@ class FileSearchingCharsetTest {
     }
 
     @Test
+    void whenSearchingFileWithoutTrailingNewlineThenFindsLastLine() throws Exception {
+        Path file = tempDir.resolve("no-trailing-newline.log");
+        Files.writeString(file, "first\\nlast match", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("match");
+
+        FileSearchIndex index = FileSearching.search(form, new FileSearchIndex(file, StandardCharsets.UTF_8));
+
+        assertEquals(1, index.getMatchCount());
+        assertEquals(2, index.getCursor(0).getLine());
+        assertEquals("last match", FileReader.readLines(index, 0, 1).get(0).getLine());
+    }
+
+    @Test
+    void whenSearchingEmptyFileThenCompletesWithoutMatches() throws Exception {
+        Path file = tempDir.resolve("empty-search.log");
+        Files.createFile(file);
+        SearchForm form = new SearchForm();
+        form.setText("anything");
+
+        FileSearchIndex index = FileSearching.search(form, new FileSearchIndex(file, StandardCharsets.UTF_8));
+
+        assertTrue(index.isFinishSearching());
+        assertEquals(0, index.getMatchCount());
+    }
+
+    @Test
     void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
         Path file = tempDir.resolve("utf16.log");
         Files.writeString(file, "first\nsecond", StandardCharsets.UTF_16LE);
