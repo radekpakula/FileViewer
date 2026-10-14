@@ -2,6 +2,7 @@ package org.vaadin.addons.viewer.application.file.search;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import org.vaadin.addons.viewer.application.file.EncodedLineReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class FileSearchIndex {
     public FileSearchIndex(Path path, Charset charset) {
         this.path = Objects.requireNonNull(path);
         this.charset = Objects.requireNonNull(charset);
+        EncodedLineReader.validateCharset(charset);
     }
 
     public Charset getCharset() { return charset; }
