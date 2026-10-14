@@ -1,6 +1,7 @@
 package org.vaadin.addons.viewer;
 
 import java.io.File;
+import java.nio.charset.Charset;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
@@ -38,7 +39,7 @@ public class AddonView extends Div {
 
         add(viewer);
 
-        viewer.openFile(new File("src/test/resources/test.txt").toPath());
+        viewer.openFile(new File("src/test/resources/test.txt").toPath(), Charset.defaultCharset());
     }
 
 }
