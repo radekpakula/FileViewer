@@ -18,6 +18,24 @@ class FileInfoCharsetPollingTest {
     Path tempDir;
 
     @Test
+    void whenFileContentChangesWithoutLengthChangeThenDetectsModification() throws Exception {
+        Path file = tempDir.resolve("same-size-change.log");
+        Files.writeString(file, "first\n", StandardCharsets.UTF_8);
+        FileInfo info = FileInfo.of(file, StandardCharsets.UTF_8);
+        long originalLength = Files.size(file);
+        long modifiedTime = Files.getLastModifiedTime(file).toMillis();
+
+        Files.writeString(file, "other\n", StandardCharsets.UTF_8);
+        Files.setLastModifiedTime(file, java.nio.file.attribute.FileTime.fromMillis(modifiedTime + 5000));
+
+        assertTrue(Files.size(file) == originalLength);
+        assertTrue(info.isFileChanged());
+
+        info.updateFileLength();
+        assertFalse(info.isFileChanged());
+    }
+
+    @Test
     void whenFileIsAppendedThenPollingDetectsChangeForEachSelectedCharset() throws Exception {
         Path file = tempDir.resolve("polled.log");
         Files.write(file, "zażółć\n".getBytes(StandardCharsets.UTF_8));
