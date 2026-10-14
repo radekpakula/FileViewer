@@ -3,7 +3,7 @@
 .settings
 .project
 .classpath
-
+.package.json
 *.iml
 .DS_Store
 
