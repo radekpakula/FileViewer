@@ -10,7 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.vaadin.addons.viewer.application.exception.ViewerException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FileIndexingCharsetTest {
 
@@ -77,6 +80,30 @@ class FileIndexingCharsetTest {
         FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
 
         assertEquals(List.of(), FileReader.readLines(index, 0, 10));
+    }
+
+    @Test
+    void whenFileIsTruncatedThenRejectsExistingIndex() throws Exception {
+        Path file = tempDir.resolve("truncated.log");
+        Files.writeString(file, "first\\nsecond\\n", StandardCharsets.UTF_8);
+        FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
+
+        Files.writeString(file, "x", StandardCharsets.UTF_8);
+
+        assertThrows(ViewerException.class, () -> FileIndexing.indexFile(index));
+    }
+
+    @Test
+    void whenAppendingCrLfAcrossIndexingRunsThenCountsSingleLineBreak() throws Exception {
+        Path file = tempDir.resolve("split-crlf.log");
+        Files.writeString(file, "first\\r", StandardCharsets.UTF_8);
+        FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
+
+        Files.writeString(file, "\\nsecond", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+        FileIndexing.indexFile(index);
+
+        assertEquals(List.of("first", "second"),
+                FileReader.readLines(index, 0, 10).stream().map(e -> e.getLog()).toList());
     }
 
     @Test
