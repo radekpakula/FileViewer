@@ -55,7 +55,9 @@ public class FilePolling {
                 if (!tabContent.getFileInfo().isFileChanged()) {
                     continue;
                 }
+                boolean contentRewritten = tabContent.getFileInfo().isContentRewritten();
                 tabContent.getFileInfo().updateFileLength();
+                tabContent.setContentRewritten(contentRewritten);
                 Tab selectedTab = fileTabSheet.getSelectedTab();
                 if (selectedTab == null || !selectedTab.equals(tab)) {
                     fileTabSheet.markTabWithAnInformationIcon(tab);
