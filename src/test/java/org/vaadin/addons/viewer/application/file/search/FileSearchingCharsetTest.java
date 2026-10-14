@@ -180,7 +180,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenIgnoreCaseSearchRunsUnderTurkishLocaleThenUsesLocaleIndependentMatching() throws Exception {
         Path file = tempDir.resolve("turkish-locale.log");
-        Files.writeString(file, "INDEX\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "INDEX\n", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("index");
         form.setIgnoreCase(true);
@@ -197,7 +197,7 @@ class FileSearchingCharsetTest {
     @Test
     void whenRegexIsInvalidThenPreservesExistingSearchResults() throws Exception {
         Path file = tempDir.resolve("invalid-regex.log");
-        Files.writeString(file, "alpha\\nbeta\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "alpha\nbeta\n", StandardCharsets.UTF_8);
         SearchForm form = new SearchForm();
         form.setText("alpha");
         FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
