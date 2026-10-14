@@ -1,18 +1,18 @@
-
 package org.vaadin.addons.viewer.application.file.search;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-/**
- * This class store file indexes for search result
- */
 public class FileSearchIndex {
 
     public static final int RESULT_PER_PAGE = 20;
 
     private final Path path;
+    private final Charset charset;
     private final List<FileSearchResultLine> lineCursor = new ArrayList<>();
     private boolean searchDone;
     private long processingTime;
@@ -22,7 +22,16 @@ public class FileSearchIndex {
     private int lineCounter;
 
     public FileSearchIndex(Path path) {
-        this.path = path;
+        this(path, StandardCharsets.UTF_8);
+    }
+
+    public FileSearchIndex(Path path, Charset charset) {
+        this.path = Objects.requireNonNull(path);
+        this.charset = Objects.requireNonNull(charset);
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 
     public int getMatchCount() {
@@ -46,11 +55,10 @@ public class FileSearchIndex {
     }
 
     public double processingPercentage() {
-        final double v = (double) processingPosition / fileSize;
-        if (v > 1) {
-            return 1;
+        if (fileSize == 0) {
+            return searchDone ? 1 : 0;
         }
-        return v;
+        return Math.min(1, (double) processingPosition / fileSize);
     }
 
     public void interrupt() {
@@ -107,5 +115,4 @@ public class FileSearchIndex {
     void setSearchDone() {
         this.searchDone = true;
     }
-
 }
