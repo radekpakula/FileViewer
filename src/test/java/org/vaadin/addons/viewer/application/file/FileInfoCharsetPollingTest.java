@@ -36,6 +36,21 @@ class FileInfoCharsetPollingTest {
     }
 
     @Test
+    void whenFileIsTruncatedThenPollingDetectsChange() throws Exception {
+        Path file = tempDir.resolve("truncated.log");
+        Files.writeString(file, "first line\\nsecond line\\n", StandardCharsets.UTF_8);
+        FileInfo info = FileInfo.of(file, StandardCharsets.UTF_8);
+
+        Files.writeString(file, "short\\n", StandardCharsets.UTF_8);
+
+        assertTrue(info.isFileChanged());
+        assertTrue(info.requiresIndexRebuild());
+
+        info.updateFileLength();
+        assertFalse(info.isFileChanged());
+    }
+
+    @Test
     void whenFileIsAppendedThenPollingDetectsChangeForEachSelectedCharset() throws Exception {
         Path file = tempDir.resolve("polled.log");
         Files.write(file, "zażółć\n".getBytes(StandardCharsets.UTF_8));
