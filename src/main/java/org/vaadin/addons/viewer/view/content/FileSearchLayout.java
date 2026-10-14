@@ -83,7 +83,11 @@ public class FileSearchLayout extends VerticalLayout {
                 searchBar.refreshState(fileIndex);
                 resultGrid.getDataProvider().refreshAll();
             } else if (error != null) {
-                showError(error);
+                Throwable cause = error.getCause() == null ? error : error.getCause();
+                String message = cause.getMessage() == null ? "Search failed" : cause.getMessage();
+                Notification notification = Notification.show(message);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                notification.open();
             }
             ui.push();
         });
