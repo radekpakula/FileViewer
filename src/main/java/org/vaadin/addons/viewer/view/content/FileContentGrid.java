@@ -1,6 +1,8 @@
 package org.vaadin.addons.viewer.view.content;
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -22,6 +24,7 @@ public class FileContentGrid extends Grid<LineEntry> {
     private static final Logger LOG = LoggerFactory.getLogger(FileContentGrid.class);
     private FileIndex fileIndex;
     private final FileViewerSystem system;
+    private final AtomicBoolean indexing = new AtomicBoolean();
 
     FileContentGrid(FileViewerSystem system, FileIndex fileIndex) {
         super(LineEntry.class, false);
@@ -85,20 +88,41 @@ public class FileContentGrid extends Grid<LineEntry> {
     }
 
     public void extendIndexEvent() {
-        FileIndexing.indexFile(fileIndex);
-        system.getUi().access(() -> {
-            getDataProvider().refreshAll();
-            if (system.isFollowChanges()) {
-                scrollToIndex(fileIndex.getMaxIndex());
-            }
-        });
+        if (!indexing.compareAndSet(false, true)) {
+            return;
+        }
+        FileIndex indexToExtend = fileIndex;
+        CompletableFuture.supplyAsync(() -> FileIndexing.indexFile(indexToExtend))
+                .whenComplete((updatedIndex, error) -> {
+                    indexing.set(false);
+                    if (error != null) {
+                        LOG.error("Unable to extend file index", error);
+                        return;
+                    }
+                    system.getUi().access(() -> {
+                        getDataProvider().refreshAll();
+                        if (system.isFollowChanges()) {
+                            scrollToIndex(fileIndex.getMaxIndex());
+                        }
+                    });
+                });
     }
 
     public void rebuildIndexEvent() {
-        fileIndex = FileIndexing.indexFile(new FileIndex(fileIndex.getPath(), fileIndex.getCharset()));
-        getDataProvider().refreshAll();
-        if (system.isFollowChanges()) {
-            scrollToIndex(fileIndex.getMaxIndex());
-        }
+        FileIndex replacement = new FileIndex(fileIndex.getPath(), fileIndex.getCharset());
+        fileIndex = replacement;
+        CompletableFuture.supplyAsync(() -> FileIndexing.indexFile(replacement))
+                .whenComplete((updatedIndex, error) -> {
+                    if (error != null) {
+                        LOG.error("Unable to rebuild file index", error);
+                        return;
+                    }
+                    system.getUi().access(() -> {
+                        getDataProvider().refreshAll();
+                        if (system.isFollowChanges()) {
+                            scrollToIndex(fileIndex.getMaxIndex());
+                        }
+                    });
+                });
     }
 }
