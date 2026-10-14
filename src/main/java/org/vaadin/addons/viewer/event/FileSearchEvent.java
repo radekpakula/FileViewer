@@ -19,45 +19,50 @@ public class FileSearchEvent {
     private static final Logger LOG = LoggerFactory.getLogger(FileSearchEvent.class);
 
     private final FileSearchLayout searchView;
-    private ScheduledExecutorService executorService;
-    private FileSearchIndex fileSearchIndex;
+    private volatile ScheduledExecutorService executorService;
+    private volatile FileSearchIndex fileSearchIndex;
 
     public FileSearchEvent(FileSearchLayout searchView) {
         this.searchView = searchView;
     }
 
-    private boolean isSearching() {
-        return executorService != null && (!executorService.isShutdown() || !executorService.isTerminated());
-    }
+    public synchronized void search(SearchForm form, FileSearchIndex index) {
+        terminate();
+        this.fileSearchIndex = index;
+        final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2, runnable -> {
+            Thread thread = new Thread(runnable, "file-viewer-search");
+            thread.setDaemon(true);
+            return thread;
+        });
+        this.executorService = executor;
 
-    public void search(SearchForm form, FileSearchIndex fileSearchIndex) {
-        if (isSearching()) {
-            Notification notification = Notification.show("Search has been terminated");
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-            notification.open();
-            return;
-        }
-        this.fileSearchIndex = fileSearchIndex;
-        executorService = Executors.newSingleThreadScheduledExecutor();
-
-        new CompletableFuture<FileSearchIndex>().completeAsync(() -> FileSearching.search(
-                        form, fileSearchIndex))
-                .whenCompleteAsync((fileIndex, error) -> {
-                    LOG.info("Searching completed in {}ms", fileSearchIndex.getProcessingTime());
-                    executorService.shutdown();
-                    searchView.searchCompleteEvent(fileIndex, error);
-                });
-
-        executorService.scheduleAtFixedRate(() -> {
-            searchView.refreshSearchResultEvent(fileSearchIndex);
+        executor.scheduleAtFixedRate(() -> {
+            if (fileSearchIndex == index && !executor.isShutdown()) {
+                searchView.refreshSearchResultEvent(index);
+            }
         }, 500, 1000, TimeUnit.MILLISECONDS);
+
+        CompletableFuture.supplyAsync(() -> FileSearching.search(form, index))
+                .whenComplete((result, error) -> {
+                    executor.shutdownNow();
+                    if (fileSearchIndex != index) {
+                        return;
+                    }
+                    LOG.info("Searching completed in {}ms", index.getProcessingTime());
+                    searchView.searchCompleteEvent(result, error);
+                });
     }
 
-    public void terminate() {
-        LOG.info("Stopping search task");
-        fileSearchIndex.interrupt();
-        if (isSearching()) {
-            executorService.shutdown();
+    public synchronized void terminate() {
+        FileSearchIndex currentIndex = fileSearchIndex;
+        fileSearchIndex = null;
+        if (currentIndex != null) {
+            currentIndex.interrupt();
+        }
+        ScheduledExecutorService currentExecutor = executorService;
+        executorService = null;
+        if (currentExecutor != null) {
+            currentExecutor.shutdownNow();
         }
     }
 }
