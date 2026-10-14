@@ -19,6 +19,10 @@ public class FileSearchIndex {
     private long fileSize;
     private boolean interrupt;
     private int lineCounter;
+    private String searchedText;
+    private boolean searchedIgnoreCase;
+    private boolean searchedRegex;
+    private boolean hasSearchCriteria;
 
     public FileSearchIndex(Path path) {
         this(path, StandardCharsets.UTF_8);
@@ -52,6 +56,24 @@ public class FileSearchIndex {
     long getFileSize() { return fileSize; }
     boolean isInterrupt() { return interrupt; }
     void setSearchDone() { searchDone = true; }
+
+    boolean canContinue(SearchForm form, long currentSize) {
+        return hasSearchCriteria && searchDone && currentSize >= fileSize
+                && Objects.equals(searchedText, form.getText())
+                && searchedIgnoreCase == form.isIgnoreCase()
+                && searchedRegex == form.isRegex();
+    }
+
+    void rememberSearchForm(SearchForm form) {
+        searchedText = form.getText();
+        searchedIgnoreCase = form.isIgnoreCase();
+        searchedRegex = form.isRegex();
+        hasSearchCriteria = true;
+    }
+
+    void removeResultsFromLine(int firstLine) {
+        lineCursor.removeIf(result -> result.getLine() >= firstLine);
+    }
 
     void reset() {
         lineCursor.clear();
