@@ -48,7 +48,7 @@ public class FileSearchEvent {
                     if (fileSearchIndex != index) {
                         return;
                     }
-                    LOG.info("Searching completed in {}ms", index.getProcessingTime());
+                    LOG.debug("Searching completed in {}ms", index.getProcessingTime());
                     searchView.searchCompleteEvent(result, error);
                 });
     }

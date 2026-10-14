@@ -31,7 +31,7 @@ public class FilePolling {
     private void checkOpenedFile() {
         if (ui == null || !ui.isAttached()) {
             interrupt();
-            LOG.info("Interrupt file polling because of detached UI");
+            LOG.debug("Interrupt file polling because of detached UI");
             return;
         }
         ui.access(() -> {

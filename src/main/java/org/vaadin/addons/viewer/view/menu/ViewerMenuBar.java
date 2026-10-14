@@ -23,9 +23,6 @@ public class ViewerMenuBar extends MenuBar {
         this.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
         this.addThemeVariants(MenuBarVariant.LUMO_SMALL);
         this.tabSheet = fileTabSheet;
-        this.addClassName("menu-block");
-        this.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
-        this.addThemeVariants(MenuBarVariant.LUMO_SMALL);
         addPoolingMenu(system, fileViewerConfig);
 
         this.addItem(VaadinIcon.ARROW_UP.create(), e -> scrollToTheBeginning());
