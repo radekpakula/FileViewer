@@ -38,10 +38,10 @@ class FileInfoCharsetPollingTest {
     @Test
     void whenFileIsTruncatedThenPollingDetectsChange() throws Exception {
         Path file = tempDir.resolve("truncated.log");
-        Files.writeString(file, "first line\\nsecond line\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "first line\nsecond line\n", StandardCharsets.UTF_8);
         FileInfo info = FileInfo.of(file, StandardCharsets.UTF_8);
 
-        Files.writeString(file, "short\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "short\n", StandardCharsets.UTF_8);
 
         assertTrue(info.isFileChanged());
         assertTrue(info.requiresIndexRebuild());
