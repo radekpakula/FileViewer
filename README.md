@@ -87,6 +87,26 @@ Configuration options:
 
 You can also use `new FileViewer()` for the default configuration.
 
+The viewer also exposes read-only access to its current configuration and a snapshot of its current display settings:
+
+```java
+import org.vaadin.addons.viewer.FileViewerConfig;
+import org.vaadin.addons.viewer.system.ViewerSettings;
+
+FileViewerConfig currentConfig = fileViewer.getViewerConfig();
+ViewerSettings currentSettings = fileViewer.getViewerSettings();
+
+int fontSize = currentSettings.getFontSize();
+int lineHeight = currentSettings.getLineHeight();
+int rowHeight = currentSettings.getRowHeight();
+boolean pollingEnabled = currentConfig.pollingEnabled();
+int pollingIntervalSeconds = currentConfig.pollingInterval();
+boolean searchVisible = currentConfig.searchViewVisible();
+boolean fontResizeAllowed = currentConfig.fontResizeAllowed();
+```
+
+`getViewerConfig()` returns the configuration object supplied when the viewer was created. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
+
 ## Initial font and row settings
 
 Use the `FileViewer(FileViewerConfig, ViewerSettings)` constructor to set the initial font size, line height, and row height. Values are in pixels.
