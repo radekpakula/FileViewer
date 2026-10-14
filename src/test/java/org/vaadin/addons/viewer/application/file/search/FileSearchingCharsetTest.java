@@ -151,6 +151,25 @@ class FileSearchingCharsetTest {
     }
 
     @Test
+    void whenCrLfIsCompletedDuringPollingThenDoesNotCreateDuplicateLine() throws Exception {
+        Path file = tempDir.resolve("incremental-crlf.log");
+        Files.writeString(file, "match\r", StandardCharsets.UTF_8);
+        SearchForm form = new SearchForm();
+        form.setText("match");
+        FileSearchIndex index = new FileSearchIndex(file, StandardCharsets.UTF_8);
+
+        FileSearching.search(form, index);
+        assertEquals(1, index.getMatchCount());
+
+        Files.writeString(file, "\nmatch two\n", StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.APPEND);
+        FileSearching.search(form, index);
+
+        assertEquals(2, index.getMatchCount());
+        assertEquals(2, index.getCursor(1).getLine());
+    }
+
+    @Test
     void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
         Path file = tempDir.resolve("utf16.log");
         Files.writeString(file, "first\nsecond", StandardCharsets.UTF_16LE);
