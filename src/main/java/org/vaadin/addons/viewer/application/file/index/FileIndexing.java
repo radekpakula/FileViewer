@@ -48,7 +48,7 @@ public final class FileIndexing {
         } catch (IOException e) {
             throw new ViewerException(e);
         }
-        fileIndex.setIndexedSize(to);
+        fileIndex.setIndexedSize(position);
         LOG.debug("Indexing of the file {} took {} ms. File length {} found lines {}",
                 fileIndex.getPath(), System.currentTimeMillis() - start, fileIndex.getIndexedSize(),
                 fileIndex.getMaxIndex() + 1);
