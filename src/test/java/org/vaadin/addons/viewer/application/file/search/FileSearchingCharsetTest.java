@@ -12,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FileSearchingCharsetTest {
 
@@ -30,6 +31,10 @@ class FileSearchingCharsetTest {
         assertEquals(1, index.getMatchCount());
         assertEquals(2, index.getCursor(0).getLine());
         assertEquals("żółć i gęślą", FileReader.readLines(index, 0, 1).get(0).getLine());
+        assertEquals("pierwsza linia\n".getBytes(charset).length,
+                index.getCursor(0).getPosition());
+        assertEquals(Files.readString(file, StandardCharsets.UTF_8).indexOf("żółć"),
+                index.getCursor(0).getPosition());
     }
 
     @Test
@@ -45,4 +50,12 @@ class FileSearchingCharsetTest {
         assertEquals(2, index.getCursor(0).getLine());
         assertEquals("żółć i gęślą", FileReader.readLines(index, 0, 1).get(0).getLine());
     }
+    @Test
+    void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
+        Path file = tempDir.resolve("utf16.log");
+        Files.writeString(file, "first\nsecond", StandardCharsets.UTF_16LE);
+        assertThrows(IllegalArgumentException.class,
+                () -> new FileSearchIndex(file, StandardCharsets.UTF_16LE));
+    }
 }
+
