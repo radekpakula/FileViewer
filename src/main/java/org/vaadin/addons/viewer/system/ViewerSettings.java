@@ -1,4 +1,6 @@
-package org.vaadin.addons.viewer;
+package org.vaadin.addons.viewer.system;
+
+import org.vaadin.addons.viewer.FileViewer;
 
 /**
  * Initial display settings for a {@link FileViewer}.
