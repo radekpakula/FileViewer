@@ -33,11 +33,12 @@ public final class FileIndexing {
                     if (next == '\n') {
                         position++;
                         fileIndex.newLineAtPosition(position);
+                    } else if (next == -1) {
+                        position = carriageReturnPosition;
+                        break;
                     } else {
                         fileIndex.newLineAtPosition(carriageReturnPosition);
-                        if (next != -1) {
-                            raf.seek(position + 1);
-                        }
+                        raf.seek(position + 1);
                     }
                 } else if (value == '\n') {
                     fileIndex.newLineAtPosition(position);
