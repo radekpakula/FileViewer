@@ -55,7 +55,7 @@ public class FilePolling {
                 if (!tabContent.getFileInfo().isFileChanged()) {
                     continue;
                 }
-                boolean contentRewritten = tabContent.getFileInfo().isContentRewritten();
+                boolean contentRewritten = tabContent.getFileInfo().requiresIndexRebuild();
                 tabContent.getFileInfo().updateFileLength();
                 tabContent.setContentRewritten(contentRewritten);
                 Tab selectedTab = fileTabSheet.getSelectedTab();
