@@ -16,15 +16,60 @@ import java.util.regex.Pattern;
 
 public final class FileSearching {
     private static final Logger LOG = LoggerFactory.getLogger(FileSearching.class);
+
     private FileSearching() {}
 
     public static FileSearchIndex search(SearchForm form, FileSearchIndex searchIndex) {
         long start = System.currentTimeMillis();
-        prepareForm(form);
-        searchIndex.reset();
+        long currentSize = searchIndex.getPath().toFile().length();
+        boolean incremental = searchIndex.canContinue(form, currentSize);
+        long startPosition = 0;
+        boolean reprocessLastLine = false;
+
+        if (incremental) {
+            long previousSize = searchIndex.getFileSize();
+            startPosition = previousSize;
+            if (currentSize > previousSize && previousSize > 0) {
+                try (RandomAccessFile raf = new RandomAccessFile(searchIndex.getPath().toFile(), "r")) {
+                    raf.seek(previousSize - 1);
+                    int lastByte = raf.read();
+                    if (lastByte != '\\n' && lastByte != '\\r') {
+                        reprocessLastLine = true;
+                        long position = previousSize - 1;
+                        while (position >= 0) {
+                            raf.seek(position);
+                            int value = raf.read();
+                            if (value == '\\n' || value == '\\r') {
+                                startPosition = position + 1;
+                                break;
+                            }
+                            startPosition = 0;
+                            position--;
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new ViewerException(e);
+                }
+            }
+            searchIndex.prepareIncrementalSearch(startPosition, reprocessLastLine);
+        } else {
+            searchIndex.reset();
+        }
+
+        searchIndex.rememberSearchForm(form);
         SearchMatcher matchers = prepareMatchersBasedOnForm(form);
+        String searchText = form.isIgnoreCase() ? form.getText().toLowerCase(Locale.ROOT) : form.getText();
+        Pattern pattern = form.isRegex() ? Pattern.compile(searchText) : null;
+
+        if (incremental && currentSize == searchIndex.getProcessingPosition()) {
+            searchIndex.setProcessingTime(System.currentTimeMillis() - start);
+            searchIndex.setSearchDone();
+            searchIndex.updateFileSize();
+            return searchIndex;
+        }
 
         try (RandomAccessFile raf = new RandomAccessFile(searchIndex.getPath().toFile(), "r")) {
+            raf.seek(startPosition);
             EncodedLineReader reader = new EncodedLineReader(raf, searchIndex.getCharset());
             String line;
             while (true) {
@@ -33,7 +78,7 @@ public final class FileSearching {
                 if (line == null) {
                     break;
                 }
-                if (matchers.match(form.getRegexPattern(), form.getText(), line)) {
+                if (matchers.match(pattern, searchText, line)) {
                     searchIndex.addPointer(FileSearchResultLine.of(searchIndex.getLineCounter() + 1, linePosition));
                 }
                 searchIndex.increaseLineCounter();
@@ -47,6 +92,8 @@ public final class FileSearching {
             throw new ViewerException(e);
         }
 
+        searchIndex.setProcessingPosition(currentSize);
+        searchIndex.updateFileSize();
         searchIndex.setProcessingTime(System.currentTimeMillis() - start);
         searchIndex.setSearchDone();
         LOG.debug("Searching of the file {} took {} ms. File length {} found lines {}",
@@ -73,14 +120,5 @@ public final class FileSearching {
             matcher = new DefaultMatcher();
         }
         return matcher;
-    }
-
-    private static void prepareForm(SearchForm form) {
-        if (form.isIgnoreCase()) {
-            form.setText(form.getText().toLowerCase(Locale.getDefault()));
-        }
-        if (form.isRegex()) {
-            form.setRegexPattern(Pattern.compile(form.getText()));
-        }
     }
 }
