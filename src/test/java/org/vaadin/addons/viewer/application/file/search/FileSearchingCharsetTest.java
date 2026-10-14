@@ -49,7 +49,10 @@ class FileSearchingCharsetTest {
         assertEquals(1, index.getMatchCount());
         assertEquals(2, index.getCursor(0).getLine());
         assertEquals("żółć i gęślą", FileReader.readLines(index, 0, 1).get(0).getLine());
+        assertEquals("pierwsza linia\n".getBytes(charset).length,
+                index.getCursor(0).getPosition());
     }
+
     @Test
     void whenUsingUtf16CharsetThenRejectsUnsupportedByteBasedIndexing() throws Exception {
         Path file = tempDir.resolve("utf16.log");
