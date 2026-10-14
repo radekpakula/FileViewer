@@ -11,7 +11,7 @@ public class FileViewerSystem {
     private FilePolling filePolling;
     private boolean followChanges = true;
 
-    private ViewerSettings viewerSettings;
+    private final ViewerSettings viewerSettings;
 
     public FileViewerSystem(FileViewerConfig config) {
         this(config,ViewerSettings.base());
@@ -60,4 +60,5 @@ public class FileViewerSystem {
     public ViewerSettings getViewerSettings() {
         return viewerSettings;
     }
+
 }

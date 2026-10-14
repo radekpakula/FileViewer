@@ -3,12 +3,12 @@ package org.vaadin.addons.viewer;
 import java.io.File;
 import java.nio.charset.Charset;
 
+import org.vaadin.addons.viewer.system.ViewerSettings;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-//@Push
-//@PreserveOnRefresh
 public class AddonView extends Div {
 
     public AddonView() {
@@ -34,9 +34,8 @@ public class AddonView extends Div {
             public boolean fontResizeAllowed() {
                 return true;
             }
-        });
+        }, new ViewerSettings(12, 12, 15));
         viewer.setId("theAddon");
-
         add(viewer);
 
         viewer.openFile(new File("src/test/resources/test.txt").toPath(), Charset.defaultCharset());

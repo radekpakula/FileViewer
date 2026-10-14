@@ -1,9 +1,9 @@
 package org.vaadin.addons.viewer;
 
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.dom.ElementDetachEvent;
-import com.vaadin.flow.dom.ElementDetachListener;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vaadin.addons.viewer.application.file.FileInfo;
@@ -14,9 +14,10 @@ import org.vaadin.addons.viewer.view.content.FilePolling;
 import org.vaadin.addons.viewer.view.content.FileTabSheet;
 import org.vaadin.addons.viewer.view.menu.ViewerMenuBar;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.dom.ElementDetachEvent;
+import com.vaadin.flow.dom.ElementDetachListener;
 
 @StyleSheet("fileviewer.css")
 public class FileViewer extends VerticalLayout implements ElementDetachListener {
@@ -30,11 +31,15 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
     }
 
     public FileViewer(FileViewerConfig fileViewerConfig) {
+        this(fileViewerConfig, ViewerSettings.base());
+    }
+
+    public FileViewer(FileViewerConfig fileViewerConfig, ViewerSettings viewerSettings) {
         this.setSizeFull();
         this.setPadding(false);
         this.setSpacing(false);
         this.setMargin(false);
-        this.system = new FileViewerSystem(fileViewerConfig, ViewerSettings.base());
+        this.system = new FileViewerSystem(fileViewerConfig, viewerSettings);
         this.fileTabSheet = new FileTabSheet(system);
         this.system.setFilePolling(new FilePolling(system, fileTabSheet));
         this.system.enablePolling(fileViewerConfig.pollingEnabled(), fileViewerConfig.pollingInterval());
@@ -70,4 +75,5 @@ public class FileViewer extends VerticalLayout implements ElementDetachListener 
     public FileTabSheet getFileTabSheet() {
         return fileTabSheet;
     }
+
 }
