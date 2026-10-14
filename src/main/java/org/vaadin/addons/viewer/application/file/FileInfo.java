@@ -12,19 +12,18 @@ public class FileInfo {
 
     protected final File file;
     protected long length;
+    private long lastModified;
     private final Charset charset;
 
     private FileInfo(File file, Charset charset) {
-        if (file == null) {
-            throw new NullPointerException();
-        }
+        Objects.requireNonNull(file, "file");
         if (!file.exists()) {
-            throw new ViewerException("File not exists");
+            throw new ViewerException("File does not exist");
         }
         this.file = file;
         this.charset = Objects.requireNonNull(charset, "charset");
         EncodedLineReader.validateCharset(charset);
-        this.length = file.length();
+        updateFileMetadata();
     }
 
     public static FileInfo of(Path path) {
@@ -32,7 +31,7 @@ public class FileInfo {
     }
 
     public static FileInfo of(Path path, Charset charset) {
-        return new FileInfo(path.toFile(), charset);
+        return new FileInfo(Objects.requireNonNull(path, "path").toFile(), charset);
     }
 
     public static FileInfo of(File file) {
@@ -48,10 +47,7 @@ public class FileInfo {
     }
 
     public String getName() {
-        if (file.getName().isEmpty()) {
-            return file.getPath();
-        }
-        return file.getName();
+        return file.getName().isEmpty() ? file.getPath() : file.getName();
     }
 
     public File getFile() {
@@ -63,16 +59,25 @@ public class FileInfo {
     }
 
     public boolean isFileChanged() {
-        return length != file.length();
+        return length != file.length() || lastModified != file.lastModified();
+    }
+
+    public boolean isContentRewritten() {
+        return length == file.length() && lastModified != file.lastModified();
     }
 
     public void updateFileLength() {
+        updateFileMetadata();
+    }
+
+    private void updateFileMetadata() {
         this.length = file.length();
+        this.lastModified = file.lastModified();
     }
 
     @Override
     public String toString() {
-        return "FileInfo={" + "file='" + file + '\'' + '}';
+        return "FileInfo={file='" + file + "'}";
     }
 
     @Override
