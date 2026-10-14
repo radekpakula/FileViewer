@@ -17,8 +17,8 @@ public class FileSearchEvent {
     private static final Logger LOG = LoggerFactory.getLogger(FileSearchEvent.class);
 
     private final FileSearchLayout searchView;
-    private ScheduledExecutorService executorService;
-    private FileSearchIndex fileSearchIndex;
+    private volatile ScheduledExecutorService executorService;
+    private volatile FileSearchIndex fileSearchIndex;
 
     public FileSearchEvent(FileSearchLayout searchView) {
         this.searchView = searchView;
