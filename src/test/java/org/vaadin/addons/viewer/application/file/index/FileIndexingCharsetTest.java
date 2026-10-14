@@ -64,7 +64,7 @@ class FileIndexingCharsetTest {
     @Test
     void whenIndexingCrLfAndCrSeparatedFileThenReadsAllLines() throws Exception {
         Path file = tempDir.resolve("mixed-newlines.log");
-        Files.writeString(file, "first\\r\\nsecond\\rthird\\nlast", StandardCharsets.UTF_8);
+        Files.writeString(file, "first\r\nsecond\rthird\nlast", StandardCharsets.UTF_8);
 
         FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
 
@@ -85,7 +85,7 @@ class FileIndexingCharsetTest {
     @Test
     void whenFileIsTruncatedThenRejectsExistingIndex() throws Exception {
         Path file = tempDir.resolve("truncated.log");
-        Files.writeString(file, "first\\nsecond\\n", StandardCharsets.UTF_8);
+        Files.writeString(file, "first\nsecond\n", StandardCharsets.UTF_8);
         FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
 
         Files.writeString(file, "x", StandardCharsets.UTF_8);
@@ -96,10 +96,10 @@ class FileIndexingCharsetTest {
     @Test
     void whenAppendingCrLfAcrossIndexingRunsThenCountsSingleLineBreak() throws Exception {
         Path file = tempDir.resolve("split-crlf.log");
-        Files.writeString(file, "first\\r", StandardCharsets.UTF_8);
+        Files.writeString(file, "first\r", StandardCharsets.UTF_8);
         FileIndex index = FileIndexing.indexFile(new FileIndex(file, StandardCharsets.UTF_8));
 
-        Files.writeString(file, "\\nsecond", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+        Files.writeString(file, "\nsecond", StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
         FileIndexing.indexFile(index);
 
         assertEquals(List.of("first", "second"),
