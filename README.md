@@ -105,7 +105,7 @@ boolean searchVisible = currentConfig.searchViewVisible();
 boolean fontResizeAllowed = currentConfig.fontResizeAllowed();
 ```
 
-`getViewerConfig()` returns the configuration object supplied when the viewer was created. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
+`getViewerConfig()` returns a snapshot of the feature configuration and the current polling state. It is intended for inspection, not for changing the running viewer. `getViewerSettings()` returns a copy of the current display settings, so changing that returned object does not change the active viewer. These methods are useful for reading the active setup; they do not reconfigure an already-created viewer.
 
 ## Initial font and row settings
 
@@ -126,7 +126,7 @@ FileViewer fileViewer = new FileViewer(new DefaultFileViewerConfig(), settings);
 add(fileViewer);
 ```
 
-The default settings are `fontSize = 20`, `lineHeight = 20`, and `rowHeight = 18`. If font resizing is enabled, users can subsequently adjust these values from the font menu. The interactive controls accept font-size and line-height values from 8 to 30, and row-height values from 14 to 30.
+The default settings are `fontSize = 20`, `lineHeight = 20`, and `rowHeight = 18`. Values are validated in code: font size and line height must be from 8 to 30, and row height from 14 to 30. If font resizing is enabled, users can subsequently adjust these values from the font menu. Polling detects both file-size changes and same-size changes when the file modification timestamp changes; same-size rewrites trigger a full index and search rebuild.
 
 ## Layout
 
